@@ -29,7 +29,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Card hover className="h-full">
         <div className="relative aspect-square overflow-hidden">
           <Image
-            src={product.images[0] || '/placeholder-product.jpg'}
+            src={product.images[0] || '/file.svg'}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-300 hover:scale-110"

@@ -18,6 +18,9 @@ npm run lint
 
 # Type check
 npx tsc --noEmit
+
+# Check API Gateway URL
+echo $NEXT_PUBLIC_API_GATEWAY_URL
 ```
 
 ### AWS Commands
@@ -309,36 +312,34 @@ npm install
 
 ## 📊 Environment Variables
 
-### Required for Development
-```env
-# Optional for local development (uses mock data)
-NEXT_PUBLIC_COGNITO_USER_POOL_ID=
-NEXT_PUBLIC_COGNITO_CLIENT_ID=
-NEXT_PUBLIC_API_GATEWAY_URL=
-```
-
-### Required for Production
+### Required for Development (with AWS)
 ```env
 # AWS Configuration
 AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_key
-AWS_SECRET_ACCESS_KEY=your_secret
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
 
 # Cognito
-NEXT_PUBLIC_COGNITO_USER_POOL_ID=us-east-1_xxx
-NEXT_PUBLIC_COGNITO_CLIENT_ID=xxx
+NEXT_PUBLIC_COGNITO_USER_POOL_ID=us-east-1_xxxxxxxxx
+NEXT_PUBLIC_COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
 NEXT_PUBLIC_COGNITO_REGION=us-east-1
 
-# DynamoDB
+# DynamoDB Tables
 DYNAMODB_PRODUCTS_TABLE=ecommerce-products
+DYNAMODB_CATEGORIES_TABLE=ecommerce-categories
 DYNAMODB_ORDERS_TABLE=ecommerce-orders
+DYNAMODB_ORDER_ITEMS_TABLE=ecommerce-order-items
+DYNAMODB_USERS_TABLE=ecommerce-users
 
 # S3
-S3_BUCKET_NAME=ecommerce-product-images
-NEXT_PUBLIC_S3_BUCKET_URL=https://bucket.s3.amazonaws.com
+S3_BUCKET_NAME=ecommerce-product-images-420
+NEXT_PUBLIC_S3_BUCKET_URL=https://ecommerce-product-images-420.s3.amazonaws.com
 
-# API Gateway
-NEXT_PUBLIC_API_GATEWAY_URL=https://xxx.execute-api.us-east-1.amazonaws.com/prod
+# API Gateway (Optional)
+NEXT_PUBLIC_API_GATEWAY_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod
+
+# Debug Flag
+NEXT_PUBLIC_DEBUG=false
 ```
 
 ## 🎯 Testing Checklist

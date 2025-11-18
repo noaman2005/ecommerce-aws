@@ -1,8 +1,8 @@
-# ShopAWS Architecture Documentation
+# Paper & Ink Architecture Documentation
 
 ## System Architecture Overview
 
-ShopAWS is built as a modern, cloud-native application using a serverless architecture. The system is divided into three main layers: Frontend, API Layer, and Data Layer.
+Paper & Ink is built as a modern, cloud-native application using a serverless architecture. The system is divided into three main layers: Frontend, API Layer, and Data Layer.
 
 ## Architecture Diagram
 
@@ -111,24 +111,32 @@ ShopAWS is built as a modern, cloud-native application using a serverless archit
 - **Rate Limiting**: 10,000 requests per second
 - **Caching**: Enabled for GET requests (TTL: 5 minutes)
 
-**Endpoints:**
+**Primary API (AWS API Gateway + Lambda):**
 ```
-GET    /products              → List all products
-GET    /products/{id}         → Get product details
-POST   /products              → Create product (Auth required)
-PUT    /products/{id}         → Update product (Auth required)
-DELETE /products/{id}         → Delete product (Auth required)
-
-GET    /categories            → List categories
-POST   /categories            → Create category (Auth required)
-
-GET    /orders                → List user orders (Auth required)
-POST   /orders                → Create order (Auth required)
-GET    /orders/{id}           → Get order details (Auth required)
-PUT    /orders/{id}/status    → Update order status (Auth required)
-
-POST   /upload/presigned-url  → Get S3 upload URL (Auth required)
+GET    /products              → Products Lambda handler (DynamoDB)
+GET    /products/{id}         → Products Lambda handler (DynamoDB)
+POST   /products              → Products Lambda handler (Auth required, DynamoDB)
+PUT    /products/{id}         → Products Lambda handler (Auth required, DynamoDB)
+DELETE /products/{id}         → Products Lambda handler (Auth required, DynamoDB)
 ```
+
+**Next.js API Routes (Internal/Optional):**
+```
+GET    /api/products              → List all products (DynamoDB)
+GET    /api/products/[id]         → Get product details (DynamoDB)
+POST   /api/products              → Create product (Auth required)
+PUT    /api/products/[id]         → Update product (Auth required)
+DELETE /api/products/[id]         → Delete product (Auth required)
+
+GET    /api/categories            → List categories (DynamoDB)
+POST   /api/categories            → Create category (Auth required)
+PUT    /api/categories            → Update category (Auth required)
+DELETE /api/categories?id=...     → Delete category (Auth required)
+
+POST   /api/upload                → Upload image to S3 (Auth required)
+```
+
+**Note:** Frontend uses AWS API Gateway endpoints. Next.js routes are available but not currently used by the web app.
 
 #### Lambda Functions
 
@@ -416,29 +424,37 @@ MFA: Optional (TOTP)
 - S3 lifecycle policies
 - Reserved capacity for predictable workloads
 
-## Future Enhancements
+## Current Implementation Status
 
-### Planned Features
+### ✅ Completed
+- [x] Next.js API routes for products and categories
+- [x] DynamoDB integration for all data persistence
+- [x] S3 image upload with pre-signed URLs
+- [x] Cognito authentication and authorization
+- [x] Admin dashboard with product/category management
+- [x] Product listing with filters and search
+- [x] Shopping cart functionality
+- [x] Image gallery on product detail pages
+- [x] Role-based access control
+
+### 🔄 In Progress
+- [ ] Checkout flow and order processing
+- [ ] Order history and tracking
+- [ ] Payment integration (Stripe/Razorpay)
+- [ ] Email notifications (SES)
+
+### 📋 Future Enhancements
 - [ ] Real-time inventory updates (WebSockets)
 - [ ] Product recommendations (ML)
-- [ ] Advanced search (Elasticsearch)
+- [ ] Advanced search (Elasticsearch/Algolia)
 - [ ] Multi-region deployment
-- [ ] GraphQL API (AppSync)
 - [ ] Mobile app (React Native)
-- [ ] Payment integration (Stripe)
-- [ ] Email notifications (SES)
-- [ ] Analytics dashboard (QuickSight)
-
-### Technical Debt
-- [ ] Add comprehensive unit tests
-- [ ] Implement E2E tests (Playwright)
-- [ ] Add API documentation (Swagger)
-- [ ] Implement rate limiting per user
-- [ ] Add request/response validation schemas
-- [ ] Optimize bundle size
-- [ ] Implement proper error boundaries
+- [ ] Analytics dashboard
+- [ ] Comprehensive unit and E2E tests
+- [ ] API documentation (Swagger)
 
 ---
 
-**Last Updated**: January 2024
-**Version**: 1.0.0
+**Last Updated**: November 2024
+**Version**: 1.1.0
+**Status**: Core backend integrated with DynamoDB, S3, and Cognito

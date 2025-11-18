@@ -1,6 +1,6 @@
-# Deployment Guide - ShopAWS E-Commerce Platform
+# Deployment Guide - Paper & Ink E-Commerce Platform
 
-This guide provides step-by-step instructions for deploying the ShopAWS platform to production.
+This guide provides step-by-step instructions for deploying the Paper & Ink platform to production.
 
 ## Table of Contents
 1. [Prerequisites](#prerequisites)
@@ -82,7 +82,7 @@ aws cloudformation create-stack \
 
 ```bash
 # Create bucket
-aws s3 mb s3://shopaws-product-images-prod --region us-east-1
+aws s3 mb s3://ecommerce-product-images-420 --region us-east-1
 
 # Enable CORS
 cat > cors.json << EOF
@@ -100,7 +100,7 @@ cat > cors.json << EOF
 EOF
 
 aws s3api put-bucket-cors \
-  --bucket shopaws-product-images-prod \
+  --bucket ecommerce-product-images-420 \
   --cors-configuration file://cors.json
 
 # Set public read policy
@@ -113,14 +113,14 @@ cat > bucket-policy.json << EOF
       "Effect": "Allow",
       "Principal": "*",
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::shopaws-product-images-prod/*"
+      "Resource": "arn:aws:s3:::ecommerce-product-images-420/*"
     }
   ]
 }
 EOF
 
 aws s3api put-bucket-policy \
-  --bucket shopaws-product-images-prod \
+  --bucket ecommerce-product-images-420 \
   --policy file://bucket-policy.json
 ```
 
@@ -223,12 +223,22 @@ aws apigateway create-authorizer \
 Create a `.env.production` file:
 
 ```env
+# AWS Cognito
 NEXT_PUBLIC_COGNITO_USER_POOL_ID=us-east-1_xxxxxxxxx
 NEXT_PUBLIC_COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
 NEXT_PUBLIC_COGNITO_REGION=us-east-1
-NEXT_PUBLIC_S3_BUCKET_URL=https://shopaws-product-images-prod.s3.amazonaws.com
+
+# AWS S3
+NEXT_PUBLIC_S3_BUCKET_URL=https://ecommerce-product-images-420.s3.amazonaws.com
+
+# AWS API Gateway (optional, for Lambda endpoints)
 NEXT_PUBLIC_API_GATEWAY_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod
+
+# App URL
 NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
+
+# Debug flag (set to false in production)
+NEXT_PUBLIC_DEBUG=false
 ```
 
 ### Step 2: Deploy to Vercel
@@ -452,6 +462,43 @@ For deployment issues, contact:
 - Email: devops@shopaws.com
 - Slack: #shopaws-deployment
 
+## Environment Variables Reference
+
+### Server-side (Backend)
+```env
+# AWS Configuration
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+
+# DynamoDB Tables
+DYNAMODB_PRODUCTS_TABLE=ecommerce-products
+DYNAMODB_CATEGORIES_TABLE=ecommerce-categories
+DYNAMODB_ORDERS_TABLE=ecommerce-orders
+DYNAMODB_ORDER_ITEMS_TABLE=ecommerce-order-items
+DYNAMODB_USERS_TABLE=ecommerce-users
+
+# S3
+S3_BUCKET_NAME=ecommerce-product-images-420
+```
+
+### Client-side (Frontend)
+```env
+# Cognito
+NEXT_PUBLIC_COGNITO_USER_POOL_ID=us-east-1_xxxxxxxxx
+NEXT_PUBLIC_COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_COGNITO_REGION=us-east-1
+
+# S3
+NEXT_PUBLIC_S3_BUCKET_URL=https://ecommerce-product-images-420.s3.amazonaws.com
+
+# API Gateway (optional)
+NEXT_PUBLIC_API_GATEWAY_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod
+
+# Debug
+NEXT_PUBLIC_DEBUG=false
+```
+
 ---
 
-**Last Updated**: January 2024
+**Last Updated**: November 2024

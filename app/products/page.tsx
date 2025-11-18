@@ -1,83 +1,37 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { ProductCard } from '@/components/products/product-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/types';
-
-// Mock data - replace with actual API call
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Premium Wireless Headphones',
-    description: 'High-quality wireless headphones with noise cancellation',
-    price: 299.99,
-    categoryId: 'electronics',
-    categoryName: 'Electronics',
-    images: ['/placeholder-product.jpg'],
-    stock: 15,
-    hostId: 'host1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    featured: true,
-  },
-  {
-    id: '2',
-    name: 'Smart Watch Pro',
-    description: 'Advanced fitness tracking and notifications',
-    price: 399.99,
-    categoryId: 'electronics',
-    categoryName: 'Electronics',
-    images: ['/placeholder-product.jpg'],
-    stock: 8,
-    hostId: 'host1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Designer Backpack',
-    description: 'Stylish and functional backpack for everyday use',
-    price: 129.99,
-    categoryId: 'fashion',
-    categoryName: 'Fashion',
-    images: ['/placeholder-product.jpg'],
-    stock: 20,
-    hostId: 'host2',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    name: 'Laptop Stand',
-    description: 'Ergonomic aluminum laptop stand',
-    price: 49.99,
-    categoryId: 'accessories',
-    categoryName: 'Accessories',
-    images: ['/placeholder-product.jpg'],
-    stock: 30,
-    hostId: 'host2',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import { useProducts } from '@/lib/hooks/use-products';
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const { products: allProducts, isLoading, isError, error } = useProducts();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [showFilters, setShowFilters] = useState(false);
 
-  const categories = [
-    { id: 'all', name: 'All Products' },
-    { id: 'electronics', name: 'Electronics' },
-    { id: 'fashion', name: 'Fashion' },
-    { id: 'accessories', name: 'Accessories' },
-  ];
+  const categories = useMemo(() => {
+    const categoryMap = new Map<string, string>();
+    
+    // Build map of categoryId -> categoryName from products
+    allProducts.forEach((p) => {
+      if (p.categoryId && !categoryMap.has(p.categoryId)) {
+        categoryMap.set(p.categoryId, p.categoryName || p.categoryId);
+      }
+    });
+    
+    // Convert map to array for display
+    const categoryList = Array.from(categoryMap).map(([id, name]) => ({ id, name }));
+    
+    return [{ id: 'all', name: 'All Products' }, ...categoryList];
+  }, [allProducts]);
 
   const sortOptions = [
     { value: 'newest', label: 'Newest First' },
@@ -86,41 +40,44 @@ export default function ProductsPage() {
     { value: 'name-asc', label: 'Name: A to Z' },
   ];
 
-  useEffect(() => {
-    let filtered = [...mockProducts];
+  const filteredProducts = useMemo(() => {
+    const productsCopy = [...allProducts];
 
-    // Apply search filter
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase())
+    let filtered = productsCopy.filter((product) => {
+      if (!searchQuery) return true;
+      const normalized = searchQuery.toLowerCase();
+      return (
+        product.name.toLowerCase().includes(normalized) ||
+        product.description.toLowerCase().includes(normalized)
       );
-    }
+    });
 
-    // Apply category filter
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter((p) => p.categoryId === selectedCategory);
+      filtered = filtered.filter((product) => product.categoryId === selectedCategory);
     }
 
-    // Apply sorting
-    switch (sortBy) {
-      case 'price-asc':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'name-asc':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'newest':
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-    }
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'price-asc':
+          return a.price - b.price;
+        case 'price-desc':
+          return b.price - a.price;
+        case 'name-asc':
+          return a.name.localeCompare(b.name);
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
 
-    setProducts(filtered);
-  }, [searchQuery, selectedCategory, sortBy]);
+    return filtered;
+  }, [allProducts, searchQuery, selectedCategory, sortBy]);
+
+  const loading = isLoading;
+  const errorMessage = isError
+    ? (typeof error === 'object' && error !== null && 'message' in error
+        ? String((error as { message?: string }).message)
+        : 'Failed to load products')
+    : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -200,18 +157,26 @@ export default function ProductsPage() {
         {/* Results Count */}
         <div className="mb-4">
           <p className="text-gray-600">
-            Showing <span className="font-semibold">{products.length}</span> products
+            Showing <span className="font-semibold">{filteredProducts.length}</span> products
           </p>
         </div>
 
+        {/* Loading / Error */}
+        {loading && (
+          <div className="text-center py-16 text-gray-600">Loading products...</div>
+        )}
+        {errorMessage && !loading && (
+          <div className="text-center py-16 text-red-600">{errorMessage}</div>
+        )}
+
         {/* Products Grid */}
-        {products.length > 0 ? (
+        {!loading && !errorMessage && filteredProducts.length > 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
-            {products.map((product, index) => (
+            {filteredProducts.map((product, index) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}

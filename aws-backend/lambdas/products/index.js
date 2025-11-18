@@ -1,6 +1,6 @@
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
-const { v4: uuidv4 } = require('uuid');
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { v4 as uuidv4 } from 'uuid';
 
 const client = new DynamoDBClient({ region: process.env.AWS_REGION });
 const docClient = DynamoDBDocumentClient.from(client);
@@ -10,36 +10,70 @@ const PRODUCTS_TABLE = process.env.DYNAMODB_PRODUCTS_TABLE || 'ecommerce-product
 /**
  * Lambda handler for product operations
  */
-exports.handler = async (event) => {
+export const handler = async (event) => {
   console.log('Event:', JSON.stringify(event, null, 2));
 
-  const { httpMethod, path, pathParameters, body, queryStringParameters } = event;
-  const userId = event.requestContext?.authorizer?.claims?.sub;
-  const userRole = event.requestContext?.authorizer?.claims?.['custom:role'];
+  // Support both API Gateway REST (v1) and HTTP API (v2) event formats
+  const httpMethod = event.httpMethod || event.requestContext?.http?.method;
+  const resource = event.resource || event.requestContext?.routeKey || '';
+  const path = event.path || event.rawPath || '';
+  const pathParameters = event.pathParameters || {};
+  const body = event.body;
+  let queryStringParameters = event.queryStringParameters || null;
+  const requestContext = event.requestContext || {};
+
+  // If HTTP API v2 provided rawQueryString, parse it into an object
+  if (!queryStringParameters && event.rawQueryString) {
+    try {
+      queryStringParameters = Object.fromEntries(new URLSearchParams(event.rawQueryString));
+    } catch {
+      queryStringParameters = null;
+    }
+  }
+
+  // Normalize path by stripping stage prefix when present
+  const stagePrefix = requestContext?.stage ? `/${requestContext.stage}` : '';
+  const normalizedPath = typeof path === 'string' && stagePrefix && path.startsWith(stagePrefix)
+    ? path.slice(stagePrefix.length)
+    : path;
+  const segments = (normalizedPath || '').split('/').filter(Boolean);
+  // Support different authorizer shapes (REST & HTTP API v2)
+  const claims = requestContext?.authorizer?.claims || requestContext?.authorizer?.jwt?.claims || requestContext?.authorizer || {};
+  const userId = claims?.sub;
+  const userRole = claims?.['custom:role'];
+  const userEmail = claims?.email;
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+  const isAdmin = (ADMIN_EMAIL && userEmail && ADMIN_EMAIL === userEmail) || userRole === 'admin';
+
+  // Router debug
+  console.log('[router]', { httpMethod, resource, path, normalizedPath, segments, pathParameters });
 
   try {
     // Route based on HTTP method and path
-    if (httpMethod === 'GET' && path === '/products') {
+    if (httpMethod === 'GET' && (resource === '/products' || normalizedPath === '/products' || (segments[0] === 'products' && segments.length === 1))) {
       return await listProducts(queryStringParameters);
     }
 
-    if (httpMethod === 'GET' && pathParameters?.id) {
-      return await getProduct(pathParameters.id);
+    if (httpMethod === 'GET' && (resource === '/products/{id}' || pathParameters?.id || (segments[0] === 'products' && segments.length === 2))) {
+      const id = (pathParameters && pathParameters.id) || segments[1];
+      return await getProduct(id);
     }
 
-    if (httpMethod === 'POST' && path === '/products') {
-      if (userRole !== 'host' && userRole !== 'admin') {
+    if (httpMethod === 'POST' && (resource === '/products' || normalizedPath === '/products' || (segments[0] === 'products' && segments.length === 1))) {
+      if (!isAdmin && userRole !== 'host' && userRole !== 'admin') {
         return errorResponse(403, 'Only hosts can create products');
       }
-      return await createProduct(JSON.parse(body), userId);
+      return await createProduct(body ? JSON.parse(body) : {}, userId);
     }
 
-    if (httpMethod === 'PUT' && pathParameters?.id) {
-      return await updateProduct(pathParameters.id, JSON.parse(body), userId, userRole);
+    if (httpMethod === 'PUT' && (resource === '/products/{id}' || pathParameters?.id || (segments[0] === 'products' && segments.length === 2))) {
+      const id = (pathParameters && pathParameters.id) || segments[1];
+      return await updateProduct(id, body ? JSON.parse(body) : {}, userId, userRole, isAdmin);
     }
 
-    if (httpMethod === 'DELETE' && pathParameters?.id) {
-      return await deleteProduct(pathParameters.id, userId, userRole);
+    if (httpMethod === 'DELETE' && (resource === '/products/{id}' || pathParameters?.id || (segments[0] === 'products' && segments.length === 2))) {
+      const id = (pathParameters && pathParameters.id) || segments[1];
+      return await deleteProduct(id, userId, userRole, isAdmin);
     }
 
     return errorResponse(404, 'Route not found');
@@ -52,7 +86,9 @@ exports.handler = async (event) => {
 /**
  * List products with optional filters
  */
-async function listProducts(params = {}) {
+async function listProducts(params) {
+  // queryStringParameters can be null from API Gateway; ensure we have an object
+  params = params || {};
   const { categoryId, search, minPrice, maxPrice, sortBy, limit = 20, lastKey } = params;
 
   let command;
@@ -169,7 +205,7 @@ async function createProduct(data, hostId) {
 /**
  * Update an existing product
  */
-async function updateProduct(id, data, userId, userRole) {
+async function updateProduct(id, data, userId, userRole, isAdminFlag) {
   // First, get the product to check ownership
   const getCommand = new GetCommand({
     TableName: PRODUCTS_TABLE,
@@ -183,7 +219,7 @@ async function updateProduct(id, data, userId, userRole) {
   }
 
   // Check if user is the host or an admin
-  if (existing.Item.hostId !== userId && userRole !== 'admin') {
+  if (existing.Item.hostId !== userId && !isAdminFlag && userRole !== 'admin') {
     return errorResponse(403, 'You can only update your own products');
   }
 
@@ -222,7 +258,7 @@ async function updateProduct(id, data, userId, userRole) {
 /**
  * Delete a product
  */
-async function deleteProduct(id, userId, userRole) {
+async function deleteProduct(id, userId, userRole, isAdminFlag) {
   // First, get the product to check ownership
   const getCommand = new GetCommand({
     TableName: PRODUCTS_TABLE,
@@ -236,7 +272,7 @@ async function deleteProduct(id, userId, userRole) {
   }
 
   // Check if user is the host or an admin
-  if (existing.Item.hostId !== userId && userRole !== 'admin') {
+  if (existing.Item.hostId !== userId && !isAdminFlag && userRole !== 'admin') {
     return errorResponse(403, 'You can only delete your own products');
   }
 

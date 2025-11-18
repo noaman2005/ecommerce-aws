@@ -1,21 +1,24 @@
-# Next Steps - ShopAWS Development Roadmap
+# Next Steps - Paper & Ink Development Roadmap
 
 ## ✅ Completed
 
 - [x] Project initialization with Next.js 14 + TypeScript
-- [x] Core UI components (Button, Input, Card, Modal)
+- [x] Core UI components (Button, Input, Card, Modal, ImageUpload)
 - [x] Layout components (Navbar, Footer)
-- [x] Home page with hero and features
-- [x] Products listing page with filters
-- [x] Shopping cart functionality
+- [x] Home page with hero and featured products
+- [x] Products listing page with filters and search
+- [x] Product detail page with image gallery
+- [x] Shopping cart functionality with persistence
 - [x] Authentication pages (Login, Signup)
-- [x] Admin dashboard
-- [x] Product management page
+- [x] Admin dashboard with analytics
+- [x] Product management with CRUD operations
+- [x] Category management with full CRUD
+- [x] S3 image upload integration
 - [x] State management with Zustand
-- [x] AWS Cognito integration
-- [x] Lambda function templates
-- [x] DynamoDB schemas
-- [x] CloudFormation templates
+- [x] AWS Cognito authentication
+- [x] DynamoDB integration for all data
+- [x] Next.js API routes for products and categories
+- [x] Lambda function for API Gateway (optional)
 - [x] Comprehensive documentation
 
 ## 🎯 Immediate Next Steps (Priority 1)

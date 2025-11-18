@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Toaster } from "sonner";
 import { Providers } from "./providers";
+import { AppShell } from "@/components/app-shell";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -12,9 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ShopAWS - Modern E-Commerce Platform",
-  description: "A cloud-native e-commerce platform built with Next.js and AWS services",
-  keywords: ["e-commerce", "shopping", "AWS", "Next.js", "online store"],
+  title: "Paper & Ink - Beautiful Stationery",
+  description: "Curated stationery and writing supplies for everyday creativity",
+  keywords: ["stationery", "notebooks", "pens", "planners", "art supplies", "paper"],
 };
 
 export default function RootLayout({
@@ -26,9 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased flex flex-col min-h-screen`}>
         <Providers>
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
+          <AppShell>{children}</AppShell>
           <Toaster position="top-right" richColors />
         </Providers>
       </body>

@@ -1,202 +1,221 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Package, ShoppingCart, DollarSign, TrendingUp, Users, Eye } from 'lucide-react';
-import { useAuthStore } from '@/lib/store/auth-store';
-import { Card } from '@/components/ui/card';
+import React, { useMemo } from "react";
+import { RefreshCcw, Package, DollarSign, Layers, AlertTriangle, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { useAuthStore } from "@/lib/store/auth-store";
+import { useProducts } from "@/lib/hooks/use-products";
 
-// Mock data - replace with actual API calls
-const stats = {
-  totalProducts: 24,
-  totalOrders: 156,
-  totalRevenue: 45678.90,
-  pendingOrders: 12,
-  totalCustomers: 342,
-  monthlyGrowth: 23.5,
-};
-
-const recentOrders = [
-  { id: '1', customer: 'John Doe', amount: 299.99, status: 'pending', date: '2024-01-15' },
-  { id: '2', customer: 'Jane Smith', amount: 149.99, status: 'shipped', date: '2024-01-14' },
-  { id: '3', customer: 'Bob Johnson', amount: 399.99, status: 'delivered', date: '2024-01-13' },
-];
+const currency = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
 
 export default function AdminDashboard() {
-  const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuthStore();
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
 
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || (user?.role !== 'host' && user?.role !== 'admin'))) {
-      router.push('/');
-    }
-  }, [isAuthenticated, isLoading, user, router]);
+  const { products, isLoading, isError, refresh } = useProducts({ token });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  const stats = useMemo(() => {
+    const totalProducts = products.length;
+    const totalInventory = products.reduce((sum, product) => sum + (product.stock ?? 0), 0);
+    const totalValue = products.reduce((sum, product) => sum + product.price * (product.stock ?? 0), 0);
+    const lowStock = products.filter((product) => (product.stock ?? 0) < 10).length;
+    const uniqueCategories = new Set(products.map((product) => product.categoryId)).size;
 
-  if (!isAuthenticated || (user?.role !== 'host' && user?.role !== 'admin')) {
-    return null;
-  }
-
-  const statCards = [
-    {
-      title: 'Total Products',
-      value: stats.totalProducts,
-      icon: Package,
-      color: 'bg-blue-500',
-      change: '+12%',
-    },
-    {
-      title: 'Total Orders',
-      value: stats.totalOrders,
-      icon: ShoppingCart,
-      color: 'bg-green-500',
-      change: '+8%',
-    },
-    {
-      title: 'Revenue',
-      value: `$${stats.totalRevenue.toLocaleString()}`,
-      icon: DollarSign,
-      color: 'bg-purple-500',
-      change: '+23%',
-    },
-    {
-      title: 'Pending Orders',
-      value: stats.pendingOrders,
-      icon: TrendingUp,
-      color: 'bg-orange-500',
-      change: '-5%',
-    },
-  ];
+    return {
+      totalProducts,
+      totalInventory,
+      totalValue,
+      lowStock,
+      uniqueCategories,
+    };
+  }, [products]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {user?.name}!</p>
+    <div className="space-y-8">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm uppercase tracking-[0.35em] text-slate-500">Overview</p>
+          <h1 className="mt-1 text-3xl font-semibold text-white">Welcome back, {user?.name ?? "Admin"}</h1>
+          <p className="mt-2 text-sm text-slate-400">
+            Track store performance, monitor stock levels, and manage your catalogue in real time.
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={() => refresh()}
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800"
+          disabled={isLoading}
+        >
+          <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          Refresh data
+        </button>
+      </header>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {statCards.map((stat, index) => (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+      {isError && (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          Failed to load products from the backend. Please try again shortly.
+        </div>
+      )}
+
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          icon={<Package className="h-6 w-6" />}
+          label="Total products"
+          value={isLoading ? "–" : stats.totalProducts.toString()}
+        />
+        <StatCard
+          icon={<Layers className="h-6 w-6" />}
+          label="Active categories"
+          value={isLoading ? "–" : stats.uniqueCategories.toString()}
+        />
+        <StatCard
+          icon={<TrendingUp className="h-6 w-6" />}
+          label="Units in inventory"
+          value={isLoading ? "–" : stats.totalInventory.toString()}
+        />
+        <StatCard
+          icon={<DollarSign className="h-6 w-6" />}
+          label="Inventory value"
+          value={isLoading ? "–" : currency.format(stats.totalValue)}
+        />
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-3">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Latest products</h2>
+              <p className="text-sm text-slate-500">Recently added or updated items</p>
+            </div>
+            <Link
+              href="/admin/products"
+              className="text-sm font-medium text-slate-300 hover:text-white"
             >
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`${stat.color} p-3 rounded-lg`}>
-                    <stat.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <span className={`text-sm font-semibold ${
-                    stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {stat.change}
-                  </span>
-                </div>
-                <h3 className="text-gray-600 text-sm mb-1">{stat.title}</h3>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              </Card>
-            </motion.div>
-          ))}
+              Manage products →
+            </Link>
+          </div>
+
+          <div className="mt-6 divide-y divide-slate-800 border border-slate-800 rounded-xl overflow-hidden">
+            {isLoading ? (
+              <div className="p-6 text-center text-sm text-slate-500">Loading products…</div>
+            ) : products.length === 0 ? (
+              <div className="p-6 text-center text-sm text-slate-500">
+                No products found. Start by adding your first product.
+              </div>
+            ) : (
+              products
+                .slice()
+                .sort((a, b) => Number(new Date(b.updatedAt)) - Number(new Date(a.updatedAt)))
+                .slice(0, 5)
+                .map((product) => (
+                  <article key={product.id} className="flex items-center justify-between gap-4 bg-slate-900/40 p-4">
+                    <div>
+                      <p className="text-sm font-semibold text-white">{product.name}</p>
+                      <p className="text-xs text-slate-500 line-clamp-1">{product.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-slate-200">{currency.format(product.price)}</p>
+                      <p className="text-xs text-slate-500">Stock: {product.stock ?? 0}</p>
+                    </div>
+                  </article>
+                ))
+            )}
+          </div>
         </div>
 
-        {/* Recent Orders */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Recent Orders</h2>
-              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                View All
-              </button>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Low stock alert</h2>
+              <p className="text-sm text-slate-500">Products with under 10 units available</p>
             </div>
+            <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-semibold text-orange-300">
+              {isLoading ? "–" : stats.lowStock}
+            </span>
+          </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Order ID</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Customer</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Amount</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4 text-sm text-gray-900">#{order.id}</td>
-                      <td className="py-4 px-4 text-sm text-gray-900">{order.customer}</td>
-                      <td className="py-4 px-4 text-sm font-semibold text-gray-900">
-                        ${order.amount.toFixed(2)}
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          order.status === 'delivered'
-                            ? 'bg-green-100 text-green-800'
-                            : order.status === 'shipped'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-sm text-gray-600">{order.date}</td>
-                      <td className="py-4 px-4">
-                        <button className="text-blue-600 hover:text-blue-700">
-                          <Eye className="w-5 h-5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </motion.div>
+          <div className="mt-6 space-y-4">
+            {isLoading ? (
+              <p className="text-sm text-slate-500">Checking stock levels…</p>
+            ) : stats.lowStock === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-slate-800 bg-slate-900/40 p-6 text-center text-sm text-slate-400">
+                <AlertTriangle className="h-6 w-6 text-slate-500" />
+                All products look healthy.
+              </div>
+            ) : (
+              products
+                .filter((product) => (product.stock ?? 0) < 10)
+                .sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0))
+                .slice(0, 5)
+                .map((product) => (
+                  <div key={product.id} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+                    <div>
+                      <p className="text-sm font-semibold text-white">{product.name}</p>
+                      <p className="text-xs text-slate-500">{product.categoryId}</p>
+                    </div>
+                    <span className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-semibold text-red-300">
+                      {product.stock ?? 0} left
+                    </span>
+                  </div>
+                ))
+            )}
+          </div>
+        </div>
+      </section>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
-          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
-            <Package className="w-8 h-8 text-blue-600 mb-4" />
-            <h3 className="font-semibold text-lg mb-2">Manage Products</h3>
-            <p className="text-gray-600 text-sm">Add, edit, or remove products from your inventory</p>
-          </Card>
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Orders snapshot</h2>
+            <p className="text-sm text-slate-500">
+              Order analytics will populate automatically once order backend endpoints are available.
+            </p>
+          </div>
+          <Link href="/admin/orders" className="text-sm font-medium text-slate-300 hover:text-white">
+            View orders →
+          </Link>
+        </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <PlaceholderStat label="Total orders" value="0" />
+          <PlaceholderStat label="Pending" value="0" />
+          <PlaceholderStat label="Completed" value="0" />
+          <PlaceholderStat label="Revenue" value="–" />
+        </div>
+      </section>
+    </div>
+  );
+}
 
-          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
-            <ShoppingCart className="w-8 h-8 text-green-600 mb-4" />
-            <h3 className="font-semibold text-lg mb-2">View Orders</h3>
-            <p className="text-gray-600 text-sm">Track and manage customer orders</p>
-          </Card>
-
-          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
-            <Users className="w-8 h-8 text-purple-600 mb-4" />
-            <h3 className="font-semibold text-lg mb-2">Customer Insights</h3>
-            <p className="text-gray-600 text-sm">View customer analytics and behavior</p>
-          </Card>
-        </motion.div>
+function StatCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="flex items-center justify-between">
+        <div className="rounded-lg bg-slate-800/70 p-3 text-slate-100">{icon}</div>
+        <span className="text-xs uppercase tracking-[0.3em] text-slate-600">Realtime</span>
       </div>
+      <p className="mt-6 text-sm text-slate-400">{label}</p>
+      <p className="text-2xl font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function PlaceholderStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+      <p className="text-xs uppercase tracking-[0.3em] text-slate-600">{label}</p>
+      <p className="mt-3 text-xl font-semibold text-slate-200">{value}</p>
     </div>
   );
 }

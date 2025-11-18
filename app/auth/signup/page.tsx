@@ -12,16 +12,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/lib/store/auth-store';
 
-const signupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-  role: z.enum(['customer', 'host']),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const signupSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -29,27 +30,25 @@ export default function SignupPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const signup = useAuthStore((state) => state.signup);
+  const setEmailToVerify = useAuthStore((state) => state.setEmailToVerify);
 
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
-    defaultValues: {
-      role: 'customer',
-    },
   });
-
-  const selectedRole = watch('role');
 
   const onSubmit = async (data: SignupFormData) => {
     try {
       setIsLoading(true);
-      await signup(data.email, data.password, data.name, data.role);
+      // Everyone starts as a customer - they can switch to host later
+      await signup(data.email, data.password, data.name, 'customer');
       toast.success('Account created! Please check your email for verification.');
-      router.push('/auth/verify-email');
+      // Ensure the verify page knows which email to verify
+      setEmailToVerify(data.email);
+      router.push(`/auth/verify-email?email=${encodeURIComponent(data.email)}`);
     } catch (error: any) {
       toast.error(error.message || 'Signup failed. Please try again.');
     } finally {
@@ -58,18 +57,18 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg"
+        className="max-w-md w-full space-y-8 bg-slate-800 border border-slate-700 p-8 rounded-xl shadow-xl"
       >
         <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">
+          <h2 className="text-center text-3xl font-bold text-white">
             Create Account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Join ShopAWS today
+          <p className="mt-2 text-center text-sm text-slate-300">
+            Join Paper & Ink and start exploring beautiful stationery.
           </p>
         </div>
 
@@ -106,62 +105,17 @@ export default function SignupPage() {
               error={errors.confirmPassword?.message}
               {...register('confirmPassword')}
             />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Account Type
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <label
-                  className={`flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    selectedRole === 'customer'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    value="customer"
-                    {...register('role')}
-                    className="sr-only"
-                  />
-                  <div className="text-center">
-                    <div className="font-semibold">Customer</div>
-                    <div className="text-xs text-gray-600">Shop products</div>
-                  </div>
-                </label>
-
-                <label
-                  className={`flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    selectedRole === 'host'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    value="host"
-                    {...register('role')}
-                    className="sr-only"
-                  />
-                  <div className="text-center">
-                    <div className="font-semibold">Host</div>
-                    <div className="text-xs text-gray-600">Sell products</div>
-                  </div>
-                </label>
-              </div>
-            </div>
           </div>
 
-          <Button type="submit" className="w-full" isLoading={isLoading}>
+          <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0" isLoading={isLoading}>
             Create Account
           </Button>
 
           <div className="text-center text-sm">
-            <span className="text-gray-600">Already have an account? </span>
+            <span className="text-slate-300">Already have an account? </span>
             <Link
               href="/auth/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium text-blue-400 hover:text-blue-300"
             >
               Sign in
             </Link>

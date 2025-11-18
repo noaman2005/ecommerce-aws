@@ -19,6 +19,7 @@ export interface Product {
   images: string[];
   stock: number;
   hostId: string;
+  createdByEmail?: string;
   createdAt: string;
   updatedAt: string;
   featured?: boolean;

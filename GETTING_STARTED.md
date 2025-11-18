@@ -1,6 +1,6 @@
-# Getting Started with ShopAWS
+# Getting Started with Paper & Ink
 
-Welcome to ShopAWS! This guide will help you get the application running on your local machine for development and testing.
+Welcome to Paper & Ink! This guide will help you get the application running on your local machine for development and testing.
 
 ## Quick Start (5 minutes)
 
@@ -18,7 +18,7 @@ Copy the example environment file:
 cp .env.local.example .env.local
 ```
 
-For local development without AWS, you can use mock data (already configured in the code).
+For local development, the app uses Next.js API routes connected to DynamoDB. AWS credentials in `.env.local` are required for full functionality. AWS credentials in `.env.local` are required for full functionality.
 
 ### 3. Run the Development Server
 
@@ -113,8 +113,8 @@ ecommerce-aws/
 ### Hot Reload
 The app uses Next.js hot reload. Any changes you make will automatically refresh the browser.
 
-### Mock Data
-Currently, the app uses mock data for products and orders. This allows you to develop without setting up AWS services.
+### Real Data Integration
+The app is fully integrated with AWS services. **AWS API Gateway + Lambda functions** handle all product and category operations with Cognito authorization. DynamoDB stores all data, and S3 is used for product image storage.
 
 ### State Management
 - **Authentication**: Managed by Zustand (`lib/store/auth-store.ts`)
@@ -191,20 +191,28 @@ export async function GET() {
 3. Click "Dashboard" in navbar
 4. Explore product management at `/admin/products`
 
-## Connecting to AWS (Optional)
+## AWS Setup (Required)
 
-To connect to real AWS services:
+The application requires AWS services to function:
 
-1. **Set up AWS account** and create required resources
-2. **Update `.env.local`** with your AWS credentials
-3. **Follow** the detailed setup in `DEPLOYMENT.md`
+1. **DynamoDB Tables**
+   - `ecommerce-products` - Product catalog
+   - `ecommerce-categories` - Product categories
+   - `ecommerce-orders` - Order records
+   - `ecommerce-order-items` - Order line items
+   - `ecommerce-users` - User profiles
 
-Required AWS services:
-- Cognito User Pool (authentication)
-- DynamoDB Tables (database)
-- S3 Bucket (image storage)
-- Lambda Functions (API handlers)
-- API Gateway (REST API)
+2. **S3 Bucket**
+   - `ecommerce-product-images-420` - Product images with public read access
+
+3. **Cognito User Pool**
+   - For user authentication and authorization
+
+4. **API Gateway (Optional)**
+   - Lambda functions can be called directly via API Gateway
+   - Currently, Next.js API routes handle most operations
+
+See `DEPLOYMENT.md` for detailed setup instructions.
 
 ## Troubleshooting
 

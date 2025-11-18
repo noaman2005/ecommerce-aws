@@ -1,6 +1,6 @@
-# ShopAWS - Cloud-Native E-Commerce Platform
+# Paper & Ink - Cloud-Native E-Commerce Platform
 
-A full-stack, serverless e-commerce web application built with **Next.js 14+**, **TypeScript**, and **AWS services**. Features a minimalistic, aesthetic UI with smooth micro-animations, role-based access control, and scalable cloud infrastructure.
+A full-stack, serverless e-commerce web application built with **Next.js 14+**, **TypeScript**, and **AWS services**. A curated stationery marketplace featuring a modern, aesthetic UI with smooth micro-animations, role-based access control, and scalable cloud infrastructure.
 
 ![Next.js](https://img.shields.io/badge/Next.js-14+-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue)
@@ -10,20 +10,17 @@ A full-stack, serverless e-commerce web application built with **Next.js 14+**, 
 ## 🎯 Features
 
 ### Customer Features
-- 🏠 **Home Page** - Hero section with featured products and categories
-- 🛍️ **Product Listing** - Search, filters (category, price range), and sorting
-- 📦 **Product Details** - Image gallery, descriptions, reviews, and add-to-cart
+- 🏠 **Home Page** - Hero section with featured stationery products
+- 🛍️ **Product Listing** - Browse notebooks, pens, planners with category filters
+- 📦 **Product Details** - Image gallery, descriptions, and add-to-cart
 - 🛒 **Shopping Cart** - Quantity management and price calculation
-- 💳 **Checkout Flow** - Order summary and address management
 - 🔐 **Authentication** - Sign up, login, logout with AWS Cognito
-- 📋 **Order History** - View past purchases and order status
+- 📋 **Order History** - View past purchases and order status (coming soon)
 
 ### Host/Admin Features
-- 🔄 **Role Switching** - Toggle between customer and host mode (Airbnb-style)
 - 📊 **Admin Dashboard** - Analytics overview and management hub
 - ➕ **Product CRUD** - Add, edit, delete products with S3 image upload
-- 🏷️ **Category Management** - Create and assign product categories
-- 📦 **Order Management** - View and update order status
+- 🏷️ **Category Management** - Create and manage product categories
 - 🔒 **Secure Access** - Role-based route guards and API protection
 
 ### UI/UX
@@ -219,56 +216,78 @@ serverless deploy --stage prod
 
 ```
 ecommerce-aws/
-├── app/                          # Next.js app directory
+├── app/                          # Next.js app directory (App Router)
+│   ├── api/                      # Next.js API routes (for internal use)
+│   │   ├── products/             # Product API endpoints (not used by frontend)
+│   │   ├── categories/           # Category API endpoints (not used by frontend)
+│   │   └── upload/               # Image upload endpoint
 │   ├── auth/                     # Authentication pages
 │   │   ├── login/
 │   │   └── signup/
-│   ├── products/                 # Product pages
-│   ├── cart/                     # Shopping cart
-│   ├── checkout/                 # Checkout flow
-│   ├── orders/                   # Order history
 │   ├── admin/                    # Admin dashboard
 │   │   ├── dashboard/
 │   │   ├── products/
-│   │   └── orders/
+│   │   ├── categories/
+│   │   └── account/
+│   ├── products/                 # Product pages
+│   │   ├── page.tsx              # Product listing
+│   │   └── [id]/page.tsx         # Product detail
+│   ├── cart/                     # Shopping cart
+│   ├── checkout/                 # Checkout flow (stub)
+│   ├── orders/                   # Order history (stub)
+│   ├── categories/               # Categories page
 │   ├── layout.tsx                # Root layout
 │   ├── page.tsx                  # Home page
-│   └── globals.css               # Global styles
+│   ├── globals.css               # Global styles
+│   └── providers.tsx             # Auth provider
 ├── components/                   # React components
 │   ├── ui/                       # UI components
 │   │   ├── button.tsx
 │   │   ├── input.tsx
 │   │   ├── card.tsx
-│   │   └── modal.tsx
+│   │   ├── modal.tsx
+│   │   └── image-upload.tsx      # S3 image upload
 │   ├── layout/                   # Layout components
 │   │   ├── navbar.tsx
 │   │   └── footer.tsx
-│   └── products/                 # Product components
-│       └── product-card.tsx
+│   ├── products/                 # Product components
+│   │   └── product-card.tsx
+│   └── app-shell.tsx             # App shell wrapper
 ├── lib/                          # Utilities and helpers
-│   ├── aws/                      # AWS SDK clients
+│   ├── api.ts                    # API client (Lambda/Gateway)
+│   ├── dynamodb.ts               # DynamoDB helpers
+│   ├── s3.ts                     # S3 upload helpers
+│   ├── storage.ts                # Product storage (legacy)
+│   ├── constants.ts              # App constants
+│   ├── aws/                      # AWS SDK config
 │   │   ├── config.ts
 │   │   └── s3.ts
 │   ├── auth/                     # Authentication helpers
 │   │   └── cognito.ts
-│   └── store/                    # State management
+│   ├── hooks/                    # React hooks
+│   │   └── use-products.ts       # SWR hook for products
+│   └── store/                    # Zustand stores
 │       ├── auth-store.ts
 │       └── cart-store.ts
 ├── types/                        # TypeScript types
 │   └── index.ts
 ├── aws-backend/                  # AWS Lambda functions
 │   ├── lambdas/
-│   │   ├── products/
-│   │   ├── categories/
-│   │   └── orders/
-│   └── infrastructure/           # IaC templates
-│       ├── cloudformation-template.yaml
-│       └── dynamodb-setup.js
+│   │   └── products/             # Products Lambda handler
+│   │       ├── index.js          # ESM handler with routing
+│   │       ├── package.json
+│   │       └── package-lock.json
+│   ├── infrastructure/           # IaC templates
+│   │   ├── cloudformation-template.yaml
+│   │   └── README.md
+│   └── README.md
 ├── public/                       # Static assets
 ├── .env.local.example            # Environment variables template
+├── .gitignore                    # Git ignore rules
 ├── next.config.ts                # Next.js configuration
-├── tailwind.config.ts            # Tailwind CSS configuration
+├── tailwind.config.js            # Tailwind CSS configuration
 ├── tsconfig.json                 # TypeScript configuration
+├── package.json                  # Dependencies
 └── README.md                     # This file
 ```
 
@@ -327,15 +346,7 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-**Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your Name](https://linkedin.com/in/yourprofile)
 
 ## 🙏 Acknowledgments
 
@@ -346,8 +357,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Support
 
-For support, email support@shopaws.com or open an issue in the repository.
+For support, open an issue in the repository or check the documentation files.
 
 ---
 
-**Built with ❤️ using Next.js and AWS**
+**Built with ❤️ using Next.js and AWS**  
+**Status**: ✅ Core features complete, backend integrated with DynamoDB, S3 image uploads, and Cognito authentication
