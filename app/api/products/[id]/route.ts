@@ -1,28 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductFromDynamoDB, updateProductInDynamoDB, deleteProductFromDynamoDB } from '@/lib/dynamodb';
 
-type RouteContext = {
-  params?: { id?: string } | Promise<{ id?: string }>;
-};
-
 // GET /api/products/[id] - Get a single product
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const rawParams = context?.params;
-    let paramsValue: { id?: string } | undefined;
-    if (rawParams) {
-      if (typeof rawParams === 'object' && 'then' in rawParams && typeof (rawParams as { then?: unknown }).then === 'function') {
-        paramsValue = await (rawParams as Promise<{ id?: string }>);
-      } else {
-        paramsValue = rawParams as { id?: string };
-      }
-    }
-    const id = paramsValue?.id;
-    if (!id) {
-      return NextResponse.json({ error: 'Missing product id' }, { status: 400 });
-    }
-
-    const product = await getProductFromDynamoDB(id);
+    const product = await getProductFromDynamoDB(params.id);
+    
     if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
@@ -41,28 +27,17 @@ export async function GET(request: NextRequest, context: RouteContext) {
 }
 
 // PUT /api/products/[id] - Update a product
-export async function PUT(request: NextRequest, context: RouteContext) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const rawParams = context?.params;
-    let paramsValue: { id?: string } | undefined;
-    if (rawParams) {
-      if (typeof rawParams === 'object' && 'then' in rawParams && typeof (rawParams as { then?: unknown }).then === 'function') {
-        paramsValue = await (rawParams as Promise<{ id?: string }>);
-      } else {
-        paramsValue = rawParams as { id?: string };
-      }
-    }
     const body = await request.json();
-    const id = paramsValue?.id;
-    if (!id) {
-      return NextResponse.json({ error: 'Missing product id' }, { status: 400 });
-    }
-    const updatedProduct = await updateProductInDynamoDB(id, body);
+    const updatedProduct = await updateProductInDynamoDB(params.id, body);
     return NextResponse.json(updatedProduct);
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('Error updating product:', error);
-    const e = error as { message?: string };
-    if (e.message === 'Product not found') {
+    if (error.message === 'Product not found') {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
@@ -76,23 +51,13 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 }
 
 // DELETE /api/products/[id] - Delete a product
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const rawParams = context?.params;
-    let paramsValue: { id?: string } | undefined;
-    if (rawParams) {
-      if (typeof rawParams === 'object' && 'then' in rawParams && typeof (rawParams as { then?: unknown }).then === 'function') {
-        paramsValue = await (rawParams as Promise<{ id?: string }>);
-      } else {
-        paramsValue = rawParams as { id?: string };
-      }
-    }
-    const id = paramsValue?.id;
-    if (!id) {
-      return NextResponse.json({ error: 'Missing product id' }, { status: 400 });
-    }
-    await deleteProductFromDynamoDB(id);
-    return NextResponse.json({ id });
+    await deleteProductFromDynamoDB(params.id);
+    return NextResponse.json({ id: params.id });
   } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json(

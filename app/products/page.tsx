@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { ProductCard } from '@/components/products/product-card';
@@ -11,23 +12,23 @@ import { useProducts } from '@/lib/hooks/use-products';
 
 export default function ProductsPage() {
   const { products: allProducts, isLoading, isError, error } = useProducts();
+  const searchParams = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
-    try {
-      if (typeof window === 'undefined') return 'all';
-      return new URLSearchParams(window.location.search).get('categoryId') ?? 'all';
-    } catch (e) {
-      return 'all';
-    }
-  });
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [showFilters, setShowFilters] = useState(false);
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000);
   const [inStockOnly, setInStockOnly] = useState(false);
 
-  // category is initialized from URL query params in useState to avoid setState-in-effect
+  // Initialize category from URL query params
+  useEffect(() => {
+    const categoryId = searchParams.get('categoryId');
+    if (categoryId) {
+      setSelectedCategory(categoryId);
+    }
+  }, [searchParams]);
 
   const categories = useMemo(() => {
     const categoryMap = new Map<string, string>();
@@ -55,7 +56,7 @@ export default function ProductsPage() {
   const filteredProducts = useMemo(() => {
     const productsCopy = [...allProducts];
 
-    const filtered = productsCopy.filter((product) => {
+    let filtered = productsCopy.filter((product) => {
       // Search filter
       if (searchQuery) {
         const normalized = searchQuery.toLowerCase();
