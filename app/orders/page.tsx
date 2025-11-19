@@ -16,16 +16,44 @@ export default function OrdersPage() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [pageLoading, setPageLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
       router.push('/auth/login');
       return;
     }
 
-    // In real app, fetch orders from API
-    setOrders([]);
-  }, [isAuthenticated, isLoading, router]);
+    // Fetch orders from API
+    const fetchOrders = async () => {
+      try {
+        setPageLoading(true);
+        setError(null);
+
+        const response = await fetch(`/api/orders?userId=${user?.id}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders');
+        }
+
+        const data = await response.json();
+        setOrders(data.data || []);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load orders');
+      } finally {
+        setPageLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [isAuthenticated, isLoading, router, user?.id]);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -48,10 +76,13 @@ export default function OrdersPage() {
     ? orders 
     : orders.filter(order => order.status === selectedStatus);
 
-  if (isLoading) {
+  if (isLoading || pageLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your orders...</p>
+        </div>
       </div>
     );
   }
@@ -68,6 +99,13 @@ export default function OrdersPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">My Orders</h1>
           <p className="text-gray-600">Track and manage your orders</p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-800">{error}</p>
+          </div>
+        )}
 
         {/* Filter Tabs */}
         <div className="mb-6">

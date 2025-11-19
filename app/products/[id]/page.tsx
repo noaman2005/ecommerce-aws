@@ -7,6 +7,7 @@ import { ShoppingCart, Heart, Minus, Plus, ArrowLeft, Share2, Image as ImageIcon
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { ProductReviews } from '@/components/products/product-reviews';
 import { useCartStore } from '@/lib/store/cart-store';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { toast } from 'sonner';
@@ -212,12 +213,7 @@ export default function ProductDetailPage() {
           </motion.div>
         </div>
 
-        <Card className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Customer feedback</h2>
-          <p className="text-sm text-gray-600">
-            Reviews will appear here once the feedback service is connected.
-          </p>
-        </Card>
+        <ProductReviews productId={productId} />
       </div>
     </div>
   );

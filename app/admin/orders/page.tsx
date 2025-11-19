@@ -34,12 +34,49 @@ export default function AdminOrdersPage() {
     setIsLoading(true);
     setError(null);
     try {
-      // No orders endpoint is available yet. This call is ready for future integration.
-      // When the API is exposed (e.g. GET /orders), plug it in here using fetch similar to the products API.
-      await new Promise((resolve) => setTimeout(resolve, 350));
-      setOrders([]);
-    } catch (err: any) {
-      setError(err?.message || "Unable to load orders");
+      const response = await fetch('/api/orders', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+      }
+
+      const data = await response.json();
+      const orderList = data.data || [];
+
+      type RawOrder = {
+        id?: string;
+        userId?: string;
+        status?: string;
+        total?: number | string;
+        createdAt?: string;
+      };
+
+      // Map backend Order to OrderSummary (safely narrow unknown shapes)
+      const summaries: OrderSummary[] = (orderList as RawOrder[]).map((order) => {
+        const id = order.id ?? '';
+        const status = (['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const).includes(
+          (order.status as OrderSummary['status'])
+        )
+          ? (order.status as OrderSummary['status'])
+          : 'pending';
+
+        return {
+          id,
+          orderNumber: id,
+          customerEmail: order.userId ?? 'Unknown',
+          status,
+          total: Number(order.total ?? 0) || 0,
+          createdAt: order.createdAt ?? new Date().toISOString(),
+        };
+      });
+
+      setOrders(summaries);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err ?? 'Unable to load orders');
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +84,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [token]);
 
   const stats = useMemo(() => {
@@ -73,7 +110,7 @@ export default function AdminOrdersPage() {
           <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Operations</p>
           <h1 className="mt-1 text-3xl font-semibold text-white">Orders</h1>
           <p className="mt-2 text-sm text-slate-400">
-            Track purchases and fulfilment. Orders will populate automatically once the backend endpoint is available.
+            Track purchases and fulfilment. Orders are synced from DynamoDB in real-time.
           </p>
         </div>
         <Button type="button" onClick={fetchOrders} disabled={isLoading} className="inline-flex items-center gap-2">
@@ -116,7 +153,7 @@ export default function AdminOrdersPage() {
           <div>
             <h2 className="text-lg font-semibold text-white">Recent orders</h2>
             <p className="text-sm text-slate-500">
-              When the orders API is exposed, the latest purchases will appear here.
+              All customer orders from DynamoDB. Click refresh to sync latest data.
             </p>
           </div>
           <Link href="/admin/products" className="text-sm font-medium text-violet-300 hover:text-white">
@@ -170,10 +207,9 @@ export default function AdminOrdersPage() {
         </div>
 
         <footer className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-5 text-sm text-slate-400">
-          <p className="font-medium text-slate-300">Backend roadmap</p>
+          <p className="font-medium text-slate-300">✅ Live Integration</p>
           <p className="mt-2">
-            Connect this view to the <code className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-200">ecommerce-orders</code> table via a new
-            API Gateway route. Once available, plug the endpoint into the fetch function above to surface real orders.
+            This view is now connected to the <code className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-200">ecommerce-orders</code> DynamoDB table via <code className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-200">GET /api/orders</code>. Orders sync automatically.
           </p>
         </footer>
       </section>

@@ -47,8 +47,9 @@ export default function LoginPage() {
       } else {
         router.push('/products');
       }
-    } catch (error: any) {
-      const code = error?.code || error?.name;
+    } catch (error: unknown) {
+      const e = error as { code?: string; name?: string; message?: string };
+      const code = e?.code || e?.name;
       switch (code) {
         case 'UserNotConfirmedException': {
           setEmailToVerify(data.email);
@@ -75,8 +76,8 @@ export default function LoginPage() {
           toast.error('Too many attempts. Please try again later.');
           break;
         }
-        default: {
-          toast.error(error?.message || 'Login failed. Please try again.');
+          default: {
+          toast.error(e?.message || 'Login failed. Please try again.');
         }
       }
     } finally {

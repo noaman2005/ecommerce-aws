@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { ProductCard } from '@/components/products/product-card';
@@ -13,9 +13,21 @@ export default function ProductsPage() {
   const { products: allProducts, isLoading, isError, error } = useProducts();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    try {
+      if (typeof window === 'undefined') return 'all';
+      return new URLSearchParams(window.location.search).get('categoryId') ?? 'all';
+    } catch (e) {
+      return 'all';
+    }
+  });
   const [sortBy, setSortBy] = useState<string>('newest');
   const [showFilters, setShowFilters] = useState(false);
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(10000);
+  const [inStockOnly, setInStockOnly] = useState(false);
+
+  // category is initialized from URL query params in useState to avoid setState-in-effect
 
   const categories = useMemo(() => {
     const categoryMap = new Map<string, string>();
@@ -43,19 +55,36 @@ export default function ProductsPage() {
   const filteredProducts = useMemo(() => {
     const productsCopy = [...allProducts];
 
-    let filtered = productsCopy.filter((product) => {
-      if (!searchQuery) return true;
-      const normalized = searchQuery.toLowerCase();
-      return (
-        product.name.toLowerCase().includes(normalized) ||
-        product.description.toLowerCase().includes(normalized)
-      );
+    const filtered = productsCopy.filter((product) => {
+      // Search filter
+      if (searchQuery) {
+        const normalized = searchQuery.toLowerCase();
+        const matchesSearch = (
+          product.name.toLowerCase().includes(normalized) ||
+          product.description.toLowerCase().includes(normalized)
+        );
+        if (!matchesSearch) return false;
+      }
+
+      // Category filter
+      if (selectedCategory !== 'all' && product.categoryId !== selectedCategory) {
+        return false;
+      }
+
+      // Price range filter
+      if (product.price < minPrice || product.price > maxPrice) {
+        return false;
+      }
+
+      // Stock filter
+      if (inStockOnly && product.stock <= 0) {
+        return false;
+      }
+
+      return true;
     });
 
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter((product) => product.categoryId === selectedCategory);
-    }
-
+    // Sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
@@ -70,7 +99,7 @@ export default function ProductsPage() {
     });
 
     return filtered;
-  }, [allProducts, searchQuery, selectedCategory, sortBy]);
+  }, [allProducts, searchQuery, selectedCategory, sortBy, minPrice, maxPrice, inStockOnly]);
 
   const loading = isLoading;
   const errorMessage = isError
@@ -126,30 +155,91 @@ export default function ProductsPage() {
             </Button>
           </div>
 
-          {/* Category Filters */}
+          {/* Advanced Filters */}
           {showFilters && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-4 pt-4 border-t border-gray-200"
+              className="mt-4 pt-4 border-t border-gray-200 space-y-4"
             >
-              <h3 className="font-semibold mb-3">Categories</h3>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`px-4 py-2 rounded-lg transition-all ${
-                      selectedCategory === category.id
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {category.name}
-                  </button>
-                ))}
+              {/* Categories */}
+              <div>
+                <h3 className="font-semibold mb-3">Categories</h3>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`px-4 py-2 rounded-lg transition-all ${
+                        selectedCategory === category.id
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* Price Range */}
+              <div>
+                <h3 className="font-semibold mb-3">Price Range</h3>
+                <div className="space-y-3">
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="text-sm text-gray-600 block mb-1">Min Price</label>
+                      <input
+                        type="number"
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-sm text-gray-600 block mb-1">Max Price</label>
+                      <input
+                        type="number"
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(Math.max(minPrice, parseInt(e.target.value) || 10000))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    ${minPrice} - ${maxPrice}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stock Filter */}
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={inStockOnly}
+                    onChange={(e) => setInStockOnly(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700">In Stock Only</span>
+                </label>
+              </div>
+
+              {/* Reset Filters */}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedCategory('all');
+                  setMinPrice(0);
+                  setMaxPrice(10000);
+                  setInStockOnly(false);
+                  setSearchQuery('');
+                }}
+                className="w-full"
+              >
+                Reset Filters
+              </Button>
             </motion.div>
           )}
         </div>

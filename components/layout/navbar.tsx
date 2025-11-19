@@ -20,6 +20,8 @@ export const Navbar: React.FC = () => {
 
   // Prevent hydration mismatch by only rendering cart count after mount
   useEffect(() => {
+    // This setState is intentional to avoid hydration mismatch (mount guard)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

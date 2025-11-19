@@ -44,4 +44,4 @@ next-env.d.ts
 **/node_modules/
 
 # Lambda deployment zips
-aws-backend/lambdas/**/function.zip.env.local
+aws-backend/lambdas/**/function.zip

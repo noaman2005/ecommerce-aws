@@ -134,6 +134,25 @@ export interface SignupCredentials {
   role?: 'customer' | 'host';
 }
 
+// Review Types
+export interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  userName: string;
+  rating: number; // 1-5
+  title: string;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductWithReviews extends Product {
+  reviews?: Review[];
+  averageRating?: number;
+  reviewCount?: number;
+}
+
 // Analytics Types (for admin dashboard)
 export interface DashboardStats {
   totalProducts: number;

@@ -1,57 +1,111 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { BookOpen, PenTool, CheckSquare, Palette, Bookmark, Package } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Category, Product } from '@/types';
 
-const categories = [
-  {
-    id: 'notebooks',
-    name: 'Notebooks',
-    icon: BookOpen,
-    description: 'Beautiful journals, notepads, and writing books for every purpose.',
-    color: 'from-blue-500 to-cyan-500',
-  },
-  {
-    id: 'pens',
-    name: 'Pens & Writing',
-    icon: PenTool,
-    description: 'Premium pens, fountain pens, and writing instruments.',
-    color: 'from-purple-500 to-pink-500',
-  },
-  {
-    id: 'planners',
-    name: 'Planners',
-    icon: CheckSquare,
-    description: 'Organize your life with our collection of planners and calendars.',
-    color: 'from-green-500 to-emerald-500',
-  },
-  {
-    id: 'art-supplies',
-    name: 'Art Supplies',
-    icon: Palette,
-    description: 'Markers, colored pencils, and creative art materials.',
-    color: 'from-yellow-500 to-orange-500',
-  },
-  {
-    id: 'paper',
-    name: 'Paper & Card',
-    icon: Package,
-    description: 'Quality cardstock, specialty paper, and craft paper.',
-    color: 'from-red-500 to-pink-500',
-  },
-  {
-    id: 'stickers',
-    name: 'Stickers & Labels',
-    icon: Bookmark,
-    description: 'Decorative stickers to personalize your projects.',
-    color: 'from-indigo-500 to-blue-500',
-  },
-];
+const categoryIcons: { [key: string]: React.ReactNode } = {
+  'notebooks': '📓',
+  'pens': '✏️',
+  'planners': '📅',
+  'art-supplies': '🎨',
+  'paper': '📄',
+  'stickers': '✨',
+};
+
+const categoryColors: { [key: string]: string } = {
+  'notebooks': 'from-blue-500 to-cyan-500',
+  'pens': 'from-purple-500 to-pink-500',
+  'planners': 'from-green-500 to-emerald-500',
+  'art-supplies': 'from-yellow-500 to-orange-500',
+  'paper': 'from-red-500 to-pink-500',
+  'stickers': 'from-indigo-500 to-blue-500',
+};
 
 export default function CategoriesPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [productCounts, setProductCounts] = useState<{ [key: string]: number }>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch categories from Next.js API route
+        const categoriesRes = await fetch('/api/categories', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!categoriesRes.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+
+        const categoriesData = await categoriesRes.json();
+        const categoryList = categoriesData.success ? (categoriesData.data || []) : (Array.isArray(categoriesData) ? categoriesData : []);
+        setCategories(categoryList);
+
+        // Fetch products to count by category
+        const productsRes = await fetch('/api/products', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (productsRes.ok) {
+          const productsData = await productsRes.json();
+          const products = productsData.success ? (productsData.data || []) : (Array.isArray(productsData) ? productsData : []);
+
+          // Count products per category
+          const counts: { [key: string]: number } = {};
+          products.forEach((product: Product) => {
+            if (product.categoryId) {
+              counts[product.categoryId] = (counts[product.categoryId] || 0) + 1;
+            }
+          });
+          setProductCounts(counts);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <p className="text-slate-300">Loading categories...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <p className="text-slate-300 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()} className="bg-blue-500 hover:bg-blue-600">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
       {/* Hero */}
@@ -76,35 +130,56 @@ export default function CategoriesPage() {
       {/* Categories Grid */}
       <section className="relative py-20 sm:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {categories.map((category, index) => {
-              const Icon = category.icon;
-              return (
-                <motion.div
-                  key={category.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Link href={`/products?category=${category.id}`}>
-                    <div className="group relative p-8 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 h-full cursor-pointer">
-                      <div className={`inline-flex p-4 rounded-lg bg-gradient-to-r ${category.color} mb-6 group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-8 h-8 text-white" />
+          {categories.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-slate-400 text-lg">No categories available yet.</p>
+              <Link href="/products">
+                <Button className="mt-4 bg-blue-500 hover:bg-blue-600">
+                  Browse All Products
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {categories.map((category, index) => {
+                const count = productCounts[category.id] || 0;
+                const color = categoryColors[category.id] || 'from-blue-500 to-cyan-500';
+                const icon = categoryIcons[category.id] || '📦';
+
+                return (
+                  <motion.div
+                    key={category.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Link href={`/products?categoryId=${category.id}`}>
+                      <div className="group relative p-8 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 h-full cursor-pointer">
+                        <div className={`inline-flex p-4 rounded-lg bg-gradient-to-r ${color} mb-6 group-hover:scale-110 transition-transform text-2xl`}>
+                          {icon}
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-2">{category.name}</h3>
+                        {category.description && (
+                          <p className="text-slate-400 mb-4 line-clamp-2">{category.description}</p>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-slate-400">
+                            {count} {count === 1 ? 'product' : 'products'}
+                          </span>
+                          <div className="flex items-center text-blue-400 group-hover:text-blue-300 transition-colors">
+                            <span>Explore</span>
+                            <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="text-2xl font-bold text-white mb-2">{category.name}</h3>
-                      <p className="text-slate-400 mb-6">{category.description}</p>
-                      <div className="flex items-center text-blue-400 group-hover:text-blue-300 transition-colors">
-                        <span>Explore</span>
-                        <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 

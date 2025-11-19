@@ -69,17 +69,116 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In real app, process payment and create order
+      const shippingCost = 9.99;
+      const tax = total * 0.08;
+      const finalTotal = total + shippingCost + tax;
+      const amountInPaise = Math.round(finalTotal * 100); // Razorpay expects amount in paise
+
+      // Create order in DynamoDB first
       const orderId = `ORDER-${Date.now()}`;
-      
-      clearCart();
-      toast.success('Order placed successfully!');
-      router.push(`/orders/${orderId}`);
+      const orderData = {
+        id: orderId,
+        userId: user?.id || 'unknown',
+        items: items.map(item => ({
+          productId: item.productId,
+          productName: item.product.name,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+        total: finalTotal,
+        subtotal: total,
+        shipping: shippingCost,
+        tax: tax,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Save order to DynamoDB
+      const orderRes = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!orderRes.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      // Create Razorpay order first
+      const razorpayRes = await fetch('/api/razorpay/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: finalTotal,
+          orderId,
+        }),
+      });
+
+      if (!razorpayRes.ok) {
+        throw new Error('Failed to create Razorpay order');
+      }
+
+      const razorpayData = await razorpayRes.json();
+
+      // Initialize Razorpay
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      document.body.appendChild(script);
+
+      script.onload = () => {
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
+          amount: amountInPaise,
+          currency: 'INR',
+          name: 'Paper & Ink',
+          description: `Order ${orderId}`,
+          order_id: razorpayData.data.razorpayOrderId,
+          handler: async (response: any) => {
+            try {
+              const userId = user?.id || 'unknown';
+              console.log('Payment handler - userId:', userId, 'user:', user);
+              
+              // Verify payment and update order status
+              const verifyRes = await fetch('/api/orders/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  orderId,
+                  userId,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpaySignature: response.razorpay_signature,
+                }),
+              });
+
+              if (verifyRes.ok) {
+                clearCart();
+                toast.success('Payment successful! Order placed.');
+                router.push(`/orders/${orderId}`);
+              } else {
+                throw new Error('Payment verification failed');
+              }
+            } catch (error) {
+              toast.error('Payment verification failed. Please contact support.');
+            }
+          },
+          prefill: {
+            name: user?.name || '',
+            email: user?.email || '',
+          },
+          theme: {
+            color: '#2563eb',
+          },
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      };
     } catch (error) {
-      toast.error('Payment failed. Please try again.');
+      console.error('Payment error:', error);
+      toast.error(error instanceof Error ? error.message : 'Payment failed. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -236,11 +335,14 @@ export default function CheckoutPage() {
                   </h2>
                   
                   <div className="space-y-4">
-                    <div className="p-4 border border-gray-200 rounded-lg">
+                    <div className="p-4 border border-gray-200 rounded-lg bg-blue-50">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <CreditCard className="w-5 h-5 text-gray-400 mr-3" />
-                          <span className="font-medium">Credit Card</span>
+                          <CreditCard className="w-5 h-5 text-blue-600 mr-3" />
+                          <div>
+                            <span className="font-medium block">Razorpay Secure Payment</span>
+                            <span className="text-sm text-gray-600">Credit/Debit Card, UPI, Wallets</span>
+                          </div>
                         </div>
                         <input
                           type="radio"
@@ -251,34 +353,15 @@ export default function CheckoutPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
-                      <Input
-                        label="Card Number"
-                        placeholder="1234 5678 9012 3456"
-                        disabled
-                      />
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input
-                          label="Expiry Date"
-                          placeholder="MM/YY"
-                          disabled
-                        />
-                        <Input
-                          label="CVV"
-                          placeholder="123"
-                          disabled
-                        />
-                      </div>
-                      <Input
-                        label="Cardholder Name"
-                        placeholder="John Doe"
-                        disabled
-                      />
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-blue-800">
+                        <strong>Secure Payment:</strong> Your payment will be processed securely through Razorpay. We accept all major credit/debit cards, UPI, and digital wallets.
+                      </p>
                     </div>
 
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-sm text-yellow-800">
-                        <strong>Demo Mode:</strong> This is a demo checkout. No real payment will be processed.
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                      <p className="text-sm text-gray-700">
+                        Click "Pay Now" to proceed to the secure Razorpay payment gateway.
                       </p>
                     </div>
 
@@ -293,9 +376,9 @@ export default function CheckoutPage() {
                       <Button
                         onClick={handlePayment}
                         isLoading={isProcessing}
-                        className="flex-1"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700"
                       >
-                        {isProcessing ? 'Processing...' : 'Place Order'}
+                        {isProcessing ? 'Processing...' : 'Pay Now'}
                       </Button>
                     </div>
                   </div>

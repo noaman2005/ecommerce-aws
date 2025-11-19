@@ -49,8 +49,9 @@ export default function SignupPage() {
       // Ensure the verify page knows which email to verify
       setEmailToVerify(data.email);
       router.push(`/auth/verify-email?email=${encodeURIComponent(data.email)}`);
-    } catch (error: any) {
-      toast.error(error.message || 'Signup failed. Please try again.');
+    } catch (error: unknown) {
+      const e = error as { message?: string };
+      toast.error(e?.message || 'Signup failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
