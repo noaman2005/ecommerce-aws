@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,17 +20,18 @@ type VerifyFormData = z.infer<typeof verifySchema>;
 
 export default function VerifyEmailPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const emailToVerify = useAuthStore((state) => state.emailToVerify);
   const [email, setEmail] = useState('');
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
-    const emailFromQuery = searchParams.get('email');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const emailFromQuery = params.get('email');
     const finalEmail = emailToVerify || emailFromQuery || '';
     if (finalEmail) setEmail(finalEmail);
-  }, [emailToVerify, searchParams]);
+  }, [emailToVerify]);
 
   const {
     register,

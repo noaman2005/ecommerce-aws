@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -28,7 +28,6 @@ const confirmSchema = z
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [step, setStep] = useState<'request' | 'confirm'>('request');
   const [email, setEmail] = useState('');
@@ -36,9 +35,11 @@ export default function ForgotPasswordPage() {
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
-    const emailFromQuery = searchParams.get('email');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const emailFromQuery = params.get('email');
     if (emailFromQuery) setEmail(emailFromQuery);
-  }, [searchParams]);
+  }, []);
 
   const {
     register: registerEmail,

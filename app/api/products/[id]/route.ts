@@ -4,8 +4,9 @@ import { getProductFromDynamoDB, updateProductInDynamoDB, deleteProductFromDynam
 // GET /api/products/[id] - Get a single product
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
+  const { params } = context as { params: { id: string } };
   try {
     const product = await getProductFromDynamoDB(params.id);
     
@@ -29,8 +30,9 @@ export async function GET(
 // PUT /api/products/[id] - Update a product
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
+  const { params } = context as { params: { id: string } };
   try {
     const body = await request.json();
     const updatedProduct = await updateProductInDynamoDB(params.id, body);
@@ -53,8 +55,9 @@ export async function PUT(
 // DELETE /api/products/[id] - Delete a product
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
+  const { params } = context as { params: { id: string } };
   try {
     await deleteProductFromDynamoDB(params.id);
     return NextResponse.json({ id: params.id });

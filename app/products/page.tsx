@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { ProductCard } from '@/components/products/product-card';
@@ -12,7 +11,6 @@ import { useProducts } from '@/lib/hooks/use-products';
 
 export default function ProductsPage() {
   const { products: allProducts, isLoading, isError, error } = useProducts();
-  const searchParams = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -24,11 +22,13 @@ export default function ProductsPage() {
 
   // Initialize category from URL query params
   useEffect(() => {
-    const categoryId = searchParams.get('categoryId');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const categoryId = params.get('categoryId');
     if (categoryId) {
       setSelectedCategory(categoryId);
     }
-  }, [searchParams]);
+  }, []);
 
   const categories = useMemo(() => {
     const categoryMap = new Map<string, string>();
