@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Shield, Bell, CreditCard, LogOut } from 'lucide-react';
+import { User, Shield, Bell, LogOut } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -36,7 +36,7 @@ type PasswordFormData = z.infer<typeof passwordSchema>;
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, logout, switchRole } = useAuthStore();
+  const { user, isAuthenticated, isLoading, logout, setUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState('profile');
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -73,9 +73,17 @@ export default function ProfilePage() {
   const onProfileSubmit = async (data: ProfileFormData) => {
     setIsUpdating(true);
     try {
-      // In real app, update user profile via API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Profile updated successfully');
+      // TODO: wire to real profile update API / Cognito attributes.
+      // For now, update local auth store so changes reflect immediately in UI.
+      if (user) {
+        setUser({
+          ...user,
+          name: data.name,
+          email: data.email,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+      toast.success('Profile updated');
     } catch (error) {
       toast.error('Failed to update profile');
     } finally {
@@ -86,9 +94,9 @@ export default function ProfilePage() {
   const onPasswordSubmit = async (data: PasswordFormData) => {
     setIsUpdating(true);
     try {
-      // In real app, update password via API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Password updated successfully');
+      // TODO: wire to real password update API.
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      toast.success('Password updated');
       resetPassword();
     } catch (error) {
       toast.error('Failed to update password');
@@ -122,110 +130,108 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Account Settings</h1>
-          <p className="text-gray-600">Manage your account preferences and settings</p>
+    <div className="min-h-screen bg-gradient-to-b from-[#fffdf8] via-[#fef3eb] to-[#f7ebe0] text-[#1c1a17] py-10 sm:py-14">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-0">
+        <div className="mb-8 sm:mb-10 space-y-2 text-center sm:text-left">
+          <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">Account</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#1c1a17]">
+            Your Nisha Stationery profile
+          </h1>
+          <p className="text-sm text-[#5f4b3f] max-w-xl">
+            Manage your details, security and how we stay in touch about new drops and notebook restocks.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8 items-start">
           <div className="lg:col-span-1">
-            <Card className="p-6">
-              {/* User Info */}
+            <Card className="p-5 sm:p-6 bg-white/80 border-[#d9cfc2] shadow-[0_12px_32px_rgba(28,26,23,0.08)]">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                <div className="w-20 h-20 rounded-full bg-[#b7472f] text-white flex items-center justify-center text-2xl font-semibold mx-auto mb-4 shadow-[0_10px_25px_rgba(183,71,47,0.45)]">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <h3 className="font-semibold text-gray-900">{user.name}</h3>
-                <p className="text-sm text-gray-600">{user.email}</p>
-                <div className="mt-2">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.role === 'host' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                  }`}>
+                <h3 className="font-semibold text-[#1c1a17]">{user.name}</h3>
+                <p className="text-sm text-[#5f4b3f]">{user.email}</p>
+                <div className="mt-3">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide ${
+                      user.role === 'host'
+                        ? 'bg-[#f4ebe3] text-[#b7472f]'
+                        : 'bg-[#f7eee5] text-[#5f4b3f]'
+                    }`}
+                  >
                     {user.role === 'host' ? 'Host' : 'Customer'}
                   </span>
                 </div>
               </div>
 
-              {/* Role Switch */}
-              <div className="mb-6">
-                <Button
-                  variant="outline"
-                  onClick={() => switchRole(user.role === 'host' ? 'customer' : 'host')}
-                  className="w-full"
-                >
-                  Switch to {user.role === 'host' ? 'Customer' : 'Host'}
-                </Button>
-              </div>
-
-              {/* Navigation */}
               <nav className="space-y-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg ${
+                    className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-150 ${
                       activeTab === tab.id
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                        ? 'bg-[#f4ebe3] text-[#b7472f] shadow-[0_8px_20px_rgba(28,26,23,0.06)]'
+                        : 'text-[#5f4b3f] hover:bg-[#f7eee5]'
                     }`}
                   >
-                    <tab.icon className="w-5 h-5 mr-3" />
+                    <tab.icon className="w-4 h-4 mr-3" />
                     {tab.name}
                   </button>
                 ))}
-                
+
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                  className="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
                 >
-                  <LogOut className="w-5 h-5 mr-3" />
+                  <LogOut className="w-4 h-4 mr-3" />
                   Logout
                 </button>
               </nav>
             </Card>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 space-y-5 sm:space-y-6">
             {activeTab === 'profile' && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <Card className="p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Information</h2>
-                  
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <Card className="p-5 sm:p-6 bg-white/80 border-[#d9cfc2] shadow-[0_14px_36px_rgba(28,26,23,0.08)]">
+                  <div className="mb-4 sm:mb-6 space-y-1">
+                    <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">
+                      Profile
+                    </p>
+                    <h2 className="text-lg sm:text-xl font-semibold text-[#1c1a17]">Profile information</h2>
+                    <p className="text-xs sm:text-sm text-[#5f4b3f]">
+                      Keep your name and contact details up to date for invoices and order updates.
+                    </p>
+                  </div>
+
                   <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <Input
                         label="Full Name"
-                        placeholder="John Doe"
+                        placeholder="Your full name"
                         error={profileErrors.name?.message}
                         {...registerProfile('name')}
                       />
                       <Input
                         label="Email Address"
                         type="email"
-                        placeholder="john@example.com"
+                        placeholder="you@example.com"
                         error={profileErrors.email?.message}
                         {...registerProfile('email')}
                       />
                     </div>
 
                     <Input
-                      label="Phone Number (Optional)"
-                      placeholder="+1 (555) 123-4567"
+                      label="Phone Number (optional)"
+                      placeholder="Mobile number for order updates"
                       error={profileErrors.phone?.message}
                       {...registerProfile('phone')}
                     />
 
                     <div className="flex justify-end">
                       <Button type="submit" isLoading={isUpdating}>
-                        Save Changes
+                        Save changes
                       </Button>
                     </div>
                   </form>
@@ -234,13 +240,18 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'security' && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <Card className="p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Security Settings</h2>
-                  
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <Card className="p-5 sm:p-6 bg-white/80 border-[#d9cfc2] shadow-[0_14px_36px_rgba(28,26,23,0.08)]">
+                  <div className="mb-4 sm:mb-6 space-y-1">
+                    <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">
+                      Security
+                    </p>
+                    <h2 className="text-lg sm:text-xl font-semibold text-[#1c1a17]">Password & access</h2>
+                    <p className="text-xs sm:text-sm text-[#5f4b3f]">
+                      Choose a strong password to keep your orders and details safe.
+                    </p>
+                  </div>
+
                   <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-6">
                     <Input
                       label="Current Password"
@@ -268,7 +279,7 @@ export default function ProfilePage() {
 
                     <div className="flex justify-end">
                       <Button type="submit" isLoading={isUpdating}>
-                        Update Password
+                        Update password
                       </Button>
                     </div>
                   </form>
@@ -277,16 +288,21 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'preferences' && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <Card className="p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Preferences</h2>
-                  
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <Card className="p-5 sm:p-6 bg-white/80 border-[#d9cfc2] shadow-[0_14px_36px_rgba(28,26,23,0.08)]">
+                  <div className="mb-4 sm:mb-6 space-y-1">
+                    <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">
+                      Preferences
+                    </p>
+                    <h2 className="text-lg sm:text-xl font-semibold text-[#1c1a17]">How we reach you</h2>
+                    <p className="text-xs sm:text-sm text-[#5f4b3f]">
+                      Choose which notebooks, launches and updates you hear about.
+                    </p>
+                  </div>
+
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">Email Notifications</h3>
+                      <h3 className="text-sm sm:text-base font-medium text-[#1c1a17] mb-3 sm:mb-4">Email notifications</h3>
                       <div className="space-y-3">
                         {[
                           { id: 'order-updates', label: 'Order updates and shipping notifications' },
@@ -299,9 +315,9 @@ export default function ProfilePage() {
                               id={item.id}
                               type="checkbox"
                               defaultChecked={item.id === 'security-alerts'}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              className="h-4 w-4 text-[#b7472f] focus:ring-[#b7472f] border-[#d9cfc2] rounded"
                             />
-                            <label htmlFor={item.id} className="ml-3 text-sm text-gray-700">
+                            <label htmlFor={item.id} className="ml-3 text-sm text-[#5f4b3f]">
                               {item.label}
                             </label>
                           </div>
@@ -310,7 +326,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">Privacy Settings</h3>
+                      <h3 className="text-sm sm:text-base font-medium text-[#1c1a17] mb-3 sm:mb-4">Privacy</h3>
                       <div className="space-y-3">
                         {[
                           { id: 'profile-visibility', label: 'Make my profile visible to other users' },
@@ -321,9 +337,9 @@ export default function ProfilePage() {
                               id={item.id}
                               type="checkbox"
                               defaultChecked={false}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              className="h-4 w-4 text-[#b7472f] focus:ring-[#b7472f] border-[#d9cfc2] rounded"
                             />
-                            <label htmlFor={item.id} className="ml-3 text-sm text-gray-700">
+                            <label htmlFor={item.id} className="ml-3 text-sm text-[#5f4b3f]">
                               {item.label}
                             </label>
                           </div>
@@ -332,7 +348,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="flex justify-end">
-                      <Button>Save Preferences</Button>
+                      <Button>Save preferences</Button>
                     </div>
                   </div>
                 </Card>

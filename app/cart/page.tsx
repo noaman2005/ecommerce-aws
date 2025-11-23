@@ -24,14 +24,14 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <ShoppingBag className="w-24 h-24 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-          <p className="text-gray-600 mb-6">Add some products to get started!</p>
+      <div className="min-h-screen bg-gradient-to-b from-[#fffdf8] via-[#fef3eb] to-[#f7ebe0] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <ShoppingBag className="w-24 h-24 text-[#d9cfc2] mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold text-[#1c1a17]">Your cart is calm</h2>
+          <p className="text-[#5f4b3f]">Add a few tactile pieces to begin your ritual.</p>
           <Link href="/products">
-            <Button size="lg">
-              Browse Products
+            <Button size="lg" className="bg-[#b7472f] hover:bg-[#c3743a] text-white">
+              Browse products
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
@@ -41,11 +41,12 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#fffdf8] via-[#fef3eb] to-[#f7ebe0] py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
-          <p className="text-gray-600">{items.length} items in your cart</p>
+          <p className="text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">In your tray</p>
+          <h1 className="text-4xl font-semibold text-[#1c1a17]">Shopping cart</h1>
+          <p className="text-[#5f4b3f]">{items.length} objects waiting for checkout</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -57,26 +58,26 @@ export default function CartPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-xl shadow-sm p-6"
+                className="bg-white/80 border border-[#d9cfc2] rounded-3xl p-6 shadow-[0_15px_40px_rgba(28,26,23,0.08)]"
               >
                 <div className="flex gap-4">
                   {/* Product Image */}
-                  <div className="relative w-24 h-24 flex-shrink-0 bg-gray-200 rounded-lg overflow-hidden">
-                    <ShoppingBag className="w-12 h-12 text-gray-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                  <div className="relative w-24 h-24 flex-shrink-0 bg-[#f4ebe3] rounded-2xl overflow-hidden">
+                    <ShoppingBag className="w-12 h-12 text-[#d9cfc2] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
                   </div>
 
                   {/* Product Details */}
                   <div className="flex-1">
                     <Link
                       href={`/products/${item.productId}`}
-                      className="font-semibold text-lg text-gray-900 hover:text-blue-600 transition-colors"
+                      className="font-semibold text-lg text-[#1c1a17] hover:text-[#b7472f] transition-colors"
                     >
                       {item.product.name}
                     </Link>
-                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                    <p className="text-[#5f4b3f] text-sm mt-1 line-clamp-2">
                       {item.product.description}
                     </p>
-                    <p className="text-blue-600 font-bold text-xl mt-2">
+                    <p className="text-[#b7472f] font-bold text-xl mt-2">
                       ${item.product.price.toFixed(2)}
                     </p>
                   </div>
@@ -85,16 +86,16 @@ export default function CartPage() {
                   <div className="flex flex-col items-end gap-4">
                     <button
                       onClick={() => handleRemoveItem(item.productId, item.product.name)}
-                      className="text-red-600 hover:text-red-700 transition-colors"
+                      className="text-red-500 hover:text-red-600 transition-colors"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
 
-                    <div className="flex items-center gap-2 bg-gray-100 rounded-lg">
+                    <div className="flex items-center gap-2 bg-[#f6f1ec] rounded-lg">
                       <button
                         onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
                         disabled={item.quantity <= 1}
-                        className="p-2 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2 hover:bg-[#f4ebe3] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -102,13 +103,13 @@ export default function CartPage() {
                       <button
                         onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
                         disabled={item.quantity >= item.product.stock}
-                        className="p-2 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2 hover:bg-[#f4ebe3] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <p className="text-gray-900 font-bold">
+                    <p className="text-[#1c1a17] font-bold">
                       ${(item.product.price * item.quantity).toFixed(2)}
                     </p>
                   </div>

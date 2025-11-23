@@ -10,22 +10,16 @@ interface CardProps {
 }
 
 export const Card: React.FC<CardProps> = ({ children, className = '', hover = false }) => {
-  const cardVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    hover: hover ? { y: -4, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' } : {},
-  };
-
+  const MotionCard = motion.div;
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="initial"
-      animate="animate"
-      whileHover="hover"
-      transition={{ duration: 0.2 }}
-      className={`bg-white rounded-xl shadow-md overflow-hidden ${className}`}
+    <MotionCard
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={hover ? { y: -6, boxShadow: '0 25px 50px rgba(28,26,23,0.12)' } : undefined}
+      transition={{ duration: 0.25 }}
+      className={`bg-white rounded-3xl border border-[#d9cfc2] shadow-[0_15px_40px_rgba(28,26,23,0.08)] overflow-hidden ${className}`}
     >
       {children}
-    </motion.div>
+    </MotionCard>
   );
 };

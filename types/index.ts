@@ -41,6 +41,7 @@ export interface Category {
   description?: string;
   createdAt: string;
   updatedAt: string;
+  imageUrl?: string;
 }
 
 // Cart Types

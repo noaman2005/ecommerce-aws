@@ -1,171 +1,143 @@
 import Link from 'next/link';
-import { ArrowRight, ShoppingBag, Shield, Truck, Star, Zap, Globe } from 'lucide-react';
+import { ArrowRight, Sparkles, BookOpen, Brush, Palette, Package } from 'lucide-react';
+import HomeCategoriesStrip from '@/components/home/home-categories-strip';
 import { Button } from '@/components/ui/button';
 import { getProducts } from '@/lib/storage';
+import { APP_NAME, APP_TAGLINE } from '@/lib/constants';
+
+const COLLECTIONS = [
+  {
+    title: 'Signature Notebooks',
+    copy: 'Fine grain covers, soft tactile paper, and artisan stitching for journaling rituals.',
+  },
+  {
+    title: 'Ink & Pens',
+    copy: 'Balanced fountain pens, archival inks, and restorative brush sets.',
+  },
+  {
+    title: 'Desk Accessories',
+    copy: 'Drawer organizers, wax seals, and travel pouches curated for creative routines.',
+  },
+];
 
 export default async function Home() {
   const products = await getProducts();
-  const featuredProducts = (products || []).filter((p) => p.featured).slice(0, 3);
+  const featuredProducts = (products || []).filter((product) => product.featured).slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 sm:py-32">
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-          <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
+    <div className="min-h-screen bg-gradient-to-b from-[#fffdf8] via-[#fef3eb] to-[#f7ebe0] text-[#1c1a17]">
+      <section className="relative py-16 sm:py-20 lg:py-24 overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(215,118,86,0.25),_transparent_45%)]" />
+          <div className="absolute inset-y-0 right-0 w-1/2 bg-[linear-gradient(90deg,_rgba(183,71,47,0.15),_transparent)]" />
         </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-6">
-                <div className="inline-flex items-center px-3 py-1 bg-blue-500/20 border border-blue-500/50 rounded-full">
-                  <Zap className="w-4 h-4 text-blue-400 mr-2" />
-                  <span className="text-sm text-blue-300 font-medium">Handpicked Stationery</span>
-                </div>
-
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-tight">
-                  Paper & Ink
-                  <span className="block text-2xl font-semibold text-slate-300 mt-2">Beautiful stationery for everyday creativity</span>
-                </h1>
-
-                <p className="text-lg sm:text-xl text-slate-300 leading-relaxed max-w-lg">
-                  Browse our curated catalogue of notebooks, pens, planners and art supplies. For now this site
-                  is a product showcase — delivery starts soon.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/products" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0">
-                    Start Shopping
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-                {/* Seller signup moved to footer */}
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 pt-4">
-                <div>
-                  <p className="text-2xl font-bold text-white">50K+</p>
-                  <p className="text-sm text-slate-400">Products</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">10K+</p>
-                  <p className="text-sm text-slate-400">Sellers</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">100K+</p>
-                  <p className="text-sm text-slate-400">Happy Customers</p>
-                </div>
-              </div>
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#f4ebe3] border border-[#d9cfc2] rounded-full text-xs sm:text-sm text-[#342c24]">
+              <Sparkles className="w-5 h-5 text-[#c3743a]" />
+              Artisan-crafted stationery
             </div>
-
-            <div className="relative hidden lg:block">
-              <div className="relative w-full h-96 rounded-2xl overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 backdrop-blur-3xl rounded-2xl"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <ShoppingBag className="w-48 h-48 text-white opacity-20 animate-bounce" />
-                </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-tight text-[#1c1a17]">
+              {APP_NAME}
+              <span className="block text-xl sm:text-2xl font-light text-[#5f4b3f] mt-3 sm:mt-4">{APP_TAGLINE}</span>
+            </h1>
+            <p className="text-base sm:text-lg text-[#3c2f24] max-w-xl leading-relaxed">
+              Discover premium notebooks, tactile papers, and writing essentials captured in a calm, collectible storefront. Nisha Stationery helps you dress your desk in intention, one beautiful tool at a time.
+            </p>
+            <div className="flex flex-wrap gap-3 sm:gap-4">
+              <Link href="/products">
+                <Button size="lg" className="bg-gradient-to-r from-[#b7472f] to-[#c3743a] text-white border-0">
+                  Shop Bespoke Sets
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+              <Link href="/about">
+                <Button size="lg" variant="outline" className="border-[#342c24] text-[#342c24] hover:border-[#b7472f]">
+                  Meet the Curators
+                </Button>
+              </Link>
+            </div>
+            <ul className="mt-6 grid grid-cols-2 gap-4 text-sm text-[#5b4c44]">
+              <li className="flex items-center gap-2">
+                <Palette className="w-4 h-4 text-[#c3743a]" />
+                Limited-edition colour stories
+              </li>
+              <li className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-[#c3743a]" />
+                Handmade long-stitch journals
+              </li>
+              <li className="flex items-center gap-2">
+                <Brush className="w-4 h-4 text-[#c3743a]" />
+                Pens and brushes with poised balance
+              </li>
+              <li className="flex items-center gap-2">
+                <Package className="w-4 h-4 text-[#c3743a]" />
+                Sustainable packaging, mindful deliveries
+              </li>
+            </ul>
+          </div>
+          <div className="relative hidden md:block">
+            <div className="relative w-full aspect-[4/5] rounded-[40px] bg-white shadow-[0_20px_70px_rgba(28,26,23,0.15)] overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(183,71,47,0.2),_transparent_55%)]" />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-4 text-xs text-[#5f4b3f] pt-8">
+                <div className="bg-[#f4ebe3] border border-[#d9cfc2] px-4 py-2 rounded-full">Handmade Papers</div>
+                <div className="bg-[#fffdf8] border border-[#d9cfc2] px-4 py-2 rounded-full">Calming Tones</div>
+                <div className="bg-[#1c1a17] text-white px-6 py-3 rounded-full">Nisha Picks</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="relative py-20 sm:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why Choose Paper & Ink?</h2>
-            <p className="text-slate-400 text-lg">Quality stationery, carefully selected for creativity and durability.</p>
-          </div>
+      <HomeCategoriesStrip />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Truck,
-                title: 'Lightning Fast Delivery',
-                description: 'Get your orders delivered quickly with real-time tracking on all shipments.',
-                color: 'from-blue-500 to-cyan-500',
-              },
-              {
-                icon: Shield,
-                title: 'Secure & Protected',
-                description: 'Enterprise‑grade security with encrypted payments and buyer protection guarantee.',
-                color: 'from-green-500 to-emerald-500',
-              },
-              {
-                icon: Globe,
-                title: 'Global Selection',
-                description: 'Browse thousands of premium products from verified sellers worldwide.',
-                color: 'from-purple-500 to-pink-500',
-              },
-            ].map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div key={index} className="group relative p-8 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10">
-                  <div className={`inline-flex p-3 rounded-lg bg-gradient-to-r ${feature.color} mb-6 group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-                  <p className="text-slate-400 leading-relaxed">{feature.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="relative py-20 sm:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-12">
+      <section className="py-14 sm:py-18 lg:py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">
+          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:items-center justify-between mb-8 lg:mb-10">
             <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">Trending Now</h2>
-              <p className="text-slate-400">Discover what is hot this season</p>
+              <p className="text-xs sm:text-sm uppercase tracking-[0.4em] text-[#5f4b3f]">Curated Collections</p>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#1c1a17] mt-2">Elevate your workspace quietly</h2>
             </div>
-            <Link href="/products">
-              <Button variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
-                View All
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
+            <Link href="/products" className="text-sm font-semibold text-[#b7472f] flex items-center gap-2">
+              See entire catalog
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+            {COLLECTIONS.map((collection) => (
+              <div key={collection.title} className="rounded-3xl border border-[#d9cfc2] bg-white p-8 shadow-[0_10px_30px_rgba(28,26,23,0.08)]">
+                <div className="h-48 rounded-2xl bg-[radial-gradient(circle_at_center,_rgba(183,71,47,0.3),_transparent_65%)] mb-6" />
+                <h3 className="text-xl font-semibold text-[#1c1a17]">{collection.title}</h3>
+                <p className="text-[#5f4b3f] mt-3">{collection.copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredProducts.map((product, index) => (
-              <Link key={product.id} href={`/products/${product.id}`} className="block">
-                <div className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 h-full flex flex-col">
-                  <div className="relative aspect-square bg-slate-900 overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 flex items-center justify-center">
-                      <ShoppingBag className="w-20 h-20 text-slate-700 group-hover:scale-110 transition-transform duration-300" />
-                    </div>
-                    {index === 0 && (
-                      <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-pink-500 to-red-500 rounded-full text-white text-xs font-bold">Featured</div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <section className="py-14 sm:py-18 lg:py-20 bg-[#fff8f1]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">
+          <div className="flex items-center justify-between mb-8 lg:mb-10">
+            <div>
+              <p className="text-xs sm:text-sm uppercase tracking-[0.4em] text-[#5f4b3f]">Studio Picks</p>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-[#1c1a17]">Currently on the desk</h2>
+            </div>
+            <Link href="/products" className="text-sm font-medium text-[#b7472f]">View all products</Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+            {featuredProducts.map((product) => (
+              <Link key={product.id} href={`/products/${product.id}`} className="block rounded-3xl border border-[#d9cfc2] bg-white p-6 shadow-[0_15px_40px_rgba(28,26,23,0.09)] hover:shadow-[0_20px_50px_rgba(28,26,23,0.15)] transition-shadow duration-300">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.5em] text-[#5f4b3f]">{product.categoryName || 'Stationery'}</p>
+                    <h3 className="text-xl sm:text-2xl font-semibold text-[#1c1a17] mt-2">{product.name}</h3>
+                    <p className="text-[#5f4b3f] mt-2 text-sm line-clamp-2">
+                      {product.description || 'A Nisha Studio favorite carefully selected for its balance of craft and comfort.'}
+                    </p>
                   </div>
-
-                  <div className="flex-1 p-6 flex flex-col justify-between">
-                    <div>
-                      <p className="text-xs text-blue-400 font-semibold uppercase tracking-wider mb-2">{product.categoryName || product.categoryId || ''}</p>
-                      <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">{product.name}</h3>
-                    </div>
-
-                    <div className="flex items-end justify-between pt-4 border-t border-slate-700">
-                      <div>
-                        <p className="text-2xl font-bold text-white">${product.price.toFixed(2)}</p>
-                      </div>
-                      {((product as any).rating || (product as any).rating === 0) ? (
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm text-slate-300">{(product as any).rating}</span>
-                        </div>
-                      ) : null}
-                    </div>
+                  <div className="text-right">
+                    <p className="text-xl sm:text-2xl font-semibold text-[#b7472f]">${product.price.toFixed(2)}</p>
+                    <p className="text-xs text-[#5f4b3f]">+ shipping</p>
                   </div>
                 </div>
               </Link>
@@ -174,20 +146,19 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Delivery Notice */}
-      <section className="relative py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-slate-800 border border-slate-700 rounded-full mb-4">
-            <Truck className="w-5 h-5 text-blue-400 mr-2" />
-            <span className="text-sm text-slate-300">Delivery starting soon — this site is currently a product catalogue for viewing only.</span>
-          </div>
-          <div>
-            <Link href="/products">
-              <Button variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
-                Browse Products
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
+      <section className="py-18 lg:py-24">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-0 text-center space-y-5 sm:space-y-6">
+          <p className="text-xs sm:text-sm uppercase tracking-[0.6em] text-[#5f4b3f]">Carefully Crafted</p>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#1c1a17]">A slow, beautiful stationery mood</h2>
+          <p className="text-[#5f4b3f] leading-relaxed">
+            At Nisha Stationery we source aromatic papers, archival inks, and expressive writing tools from artisan workshops. Each item is chosen for texture, balance, and the serene feeling it brings to your creative rituals.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {['Hand-finished', 'Ethically sourced', 'Community inspired'].map((tag) => (
+              <div key={tag} className="rounded-2xl border border-[#d9cfc2] bg-white px-6 py-5 text-sm font-semibold text-[#5f4b3f]">
+                {tag}
+              </div>
+            ))}
           </div>
         </div>
       </section>

@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Mail, Phone, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+
+const SHOP_NAME = "Nisha Stationery";
+const SHOP_PHONE = "9892911665";
+const SHOP_WHATSAPP = "919892911665"; // with country code for wa.me
+const SHOP_EMAIL = "nishastationery@gmail.com";
+const SHOP_ADDRESS = "Nisha Stationery, Kurla, Mumbai, Maharashtra 400070";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -27,160 +33,110 @@ export default function ContactPage() {
     }, 1000);
   };
 
-  const contactInfo = [
-    {
-      icon: Phone,
-      title: 'Phone',
-      value: '+1 (234) 567-890',
-      href: 'tel:+1234567890',
-    },
-    {
-      icon: Mail,
-      title: 'Email',
-      value: 'support@paperink.com',
-      href: 'mailto:support@paperink.com',
-    },
-    {
-      icon: MapPin,
-      title: 'Location',
-      value: 'Based Online • Serving Globally',
-      href: '#',
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      {/* Hero */}
-      <section className="relative overflow-hidden py-20 sm:py-32">
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-          <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#fffdf8] via-[#fef3eb] to-[#f7ebe0] text-[#1c1a17]">
+      {/* Hero + Map + Info */}
+      <section className="py-10 sm:py-16">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-0 space-y-8 sm:space-y-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
+            {/* Copy + shop details + actions */}
+            <div className="space-y-5 sm:space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#d9cfc2] bg-white/70 text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">
+                <span>Visit us</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold leading-tight text-[#1c1a17]">
+                Stationery, in real life.
+              </h1>
+              <p className="text-[#5f4b3f] max-w-xl">
+                Drop by our cozy Nisha Stationery store to browse pens, notebooks and art supplies in person, or
+                reach us directly on WhatsApp, phone or email.
+              </p>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-          <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-              Get in Touch
-            </h1>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-              Have questions or feedback? We&apos;d love to hear from you. Reach out anytime!
-            </p>
-          </div>
-        </div>
-      </section>
+              <div className="rounded-3xl border border-[#d9cfc2] bg-white/80 p-5 space-y-4 shadow-[0_16px_32px_rgba(28,26,23,0.06)]">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.4em] text-[#b7472f] mb-1">Store</p>
+                  <p className="text-lg font-semibold text-[#1c1a17]">{SHOP_NAME}</p>
+                </div>
 
-      {/* Contact Info */}
-      <section className="relative py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-            {contactInfo.map((info, index) => {
-              const Icon = info.icon;
-              return (
-                <motion.a
-                  key={index}
-                  href={info.href}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="p-8 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 hover:border-blue-500/50 transition-all duration-300 text-center group cursor-pointer"
-                >
-                  <div className="inline-flex p-4 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 mb-4 group-hover:scale-110 transition-transform">
-                    <Icon className="w-6 h-6 text-white" />
+                <div className="space-y-2 text-sm text-[#5f4b3f]">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 mt-0.5 text-[#b7472f]" />
+                    <p>{SHOP_ADDRESS}</p>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2">{info.title}</h3>
-                  <p className="text-slate-300 hover:text-blue-400 transition-colors">{info.value}</p>
-                </motion.a>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-[#b7472f]" />
+                    <a href={`tel:${SHOP_PHONE}`} className="hover:text-[#b7472f] underline underline-offset-2">
+                      {SHOP_PHONE}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-[#b7472f]" />
+                    <a
+                      href={`mailto:${SHOP_EMAIL}`}
+                      className="hover:text-[#b7472f] underline underline-offset-2"
+                    >
+                      {SHOP_EMAIL}
+                    </a>
+                  </div>
+                </div>
 
-      {/* Contact Form */}
-      <section className="relative py-20 sm:py-28">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-800 border border-slate-700 rounded-2xl p-8 sm:p-12"
-          >
-            <h2 className="text-3xl font-bold text-white mb-2">Send us a Message</h2>
-            <p className="text-slate-400 mb-8">We typically respond within 24 hours.</p>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <Input
-                label="Your Name"
-                type="text"
-                name="name"
-                placeholder="John Doe"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-
-              <Input
-                label="Email Address"
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Message
-                </label>
-                <textarea
-                  name="message"
-                  placeholder="Your message here..."
-                  rows={6}
-                  value={formData.message}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white placeholder-slate-400 border border-slate-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200 resize-none"
-                  required
-                />
+                <div className="pt-3 border-t border-[#f1e3d5] flex flex-wrap gap-3">
+                  <a
+                    href={`https://wa.me/${SHOP_WHATSAPP}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-[#25D366] hover:bg-[#1ebe5a] text-white shadow-sm transition-transform duration-150 hover:-translate-y-0.5"
+                  >
+                    WhatsApp us
+                  </a>
+                  <a
+                    href={`tel:${SHOP_PHONE}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border border-[#d9cfc2] bg-white hover:bg-[#f4ebe3] text-[#5f4b3f] shadow-sm transition-transform duration-150 hover:-translate-y-0.5"
+                  >
+                    Call store
+                  </a>
+                  <a
+                    href={`mailto:${SHOP_EMAIL}`}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium text-[#5f4b3f] hover:bg-[#f4ebe3] transition-transform duration-150 hover:-translate-y-0.5"
+                  >
+                    Email us
+                  </a>
+                </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0"
-                isLoading={isSubmitting}
-              >
-                Send Message
-              </Button>
-            </form>
-          </motion.div>
-        </div>
-      </section>
+              <div className="rounded-2xl border border-[#f1e3d5] bg-white/70 p-4 text-xs text-[#5f4b3f] space-y-1">
+                <p className="font-semibold text-[#1c1a17] tracking-[0.2em] uppercase text-[11px]">
+                  Store hours
+                </p>
+                <p>Monday – Saturday: 10:00 AM – 9:00 PM</p>
+                <p>Sunday: 11:00 AM – 8:00 PM</p>
+              </div>
+            </div>
 
-      {/* FAQ or Additional Info */}
-      <section className="relative py-20 sm:py-28">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Frequently Asked Questions
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-            <div className="text-left">
-              <h4 className="text-lg font-semibold text-white mb-2">How long are delivery times?</h4>
-              <p className="text-slate-400">Delivery is coming soon! For now, we are in catalog mode.</p>
-            </div>
-            <div className="text-left">
-              <h4 className="text-lg font-semibold text-white mb-2">Do you ship internationally?</h4>
-              <p className="text-slate-400">Contact us to inquire about international shipping options.</p>
-            </div>
-            <div className="text-left">
-              <h4 className="text-lg font-semibold text-white mb-2">What is your return policy?</h4>
-              <p className="text-slate-400">Returns and exchanges are handled on a case-by-case basis. Contact us for details.</p>
-            </div>
-            <div className="text-left">
-              <h4 className="text-lg font-semibold text-white mb-2">Are the products eco-friendly?</h4>
-              <p className="text-slate-400">We prioritize sustainable and responsibly sourced products. Check individual product pages for details.</p>
-            </div>
+            {/* Map embed */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="rounded-3xl overflow-hidden border border-[#d9cfc2] shadow-[0_20px_40px_rgba(28,26,23,0.08)] bg-white"
+            >
+              <div className="aspect-[4/3] w-full">
+                <iframe
+                  title="Nisha Stationery location"
+                  src="https://www.google.com/maps?q=19.0656282,72.8759043&z=18&output=embed"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
+
+      {/* Bottom padding */}
+      <section className="pb-16" />
     </div>
   );
 }

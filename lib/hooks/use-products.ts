@@ -1,16 +1,17 @@
 import useSWR from 'swr';
 import { useSWRConfig } from 'swr';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '@/lib/api';
-import { Product } from '@/types';
+import { Product, Category } from '@/types';
 import { useMemo } from 'react';
 
 interface UseProductsOptions {
   token?: string | null;
 }
 
-interface CategoryRecord {
+export interface CategoryRecord extends Category {
   id: string;
   name: string;
+  imageUrl?: string;
 }
 
 export function useProducts(options: UseProductsOptions = {}) {

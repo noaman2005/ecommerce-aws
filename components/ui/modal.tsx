@@ -48,25 +48,25 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 z-40 bg-gradient-to-b from-[#1c1a17]/60 to-[#442f26]/60 backdrop-blur"
           />
 
           {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.92, y: 24 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.2 }}
-              className={`bg-white rounded-xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-hidden`}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className={`glass-panel w-full ${sizes[size]} max-h-[90vh] overflow-hidden`}
             >
               {/* Header */}
               {title && (
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#f4ebe3]">
+                  <h2 className="text-xl font-semibold text-[#1c1a17]">{title}</h2>
                   <button
                     onClick={onClose}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    className="text-[#9c8a7a] hover:text-[#b7472f] transition-colors"
                   >
                     <X className="w-6 h-6" />
                   </button>

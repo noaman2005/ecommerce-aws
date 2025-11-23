@@ -107,20 +107,25 @@ export default function AdminOrdersPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Operations</p>
-          <h1 className="mt-1 text-3xl font-semibold text-white">Orders</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Track purchases and fulfilment. Orders are synced from DynamoDB in real-time.
+          <p className="text-[11px] sm:text-xs uppercase tracking-[0.35em] text-[#5f4b3f]">Operations</p>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-semibold text-[#1c1a17]">Orders</h1>
+          <p className="mt-2 text-sm text-[#5f4b3f] max-w-xl">
+            Track purchases and fulfilment. Orders sync from DynamoDB into this calm overview.
           </p>
         </div>
-        <Button type="button" onClick={fetchOrders} disabled={isLoading} className="inline-flex items-center gap-2">
+        <Button
+          type="button"
+          onClick={fetchOrders}
+          disabled={isLoading}
+          className="inline-flex items-center gap-2"
+        >
           <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </header>
 
       {error && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
@@ -148,34 +153,37 @@ export default function AdminOrdersPage() {
         />
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-3xl border border-[#d9cfc2] bg-white/85 p-5 sm:p-6 shadow-[0_16px_40px_rgba(28,26,23,0.08)]">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-white">Recent orders</h2>
-            <p className="text-sm text-slate-500">
-              All customer orders from DynamoDB. Click refresh to sync latest data.
+            <h2 className="text-base sm:text-lg font-semibold text-[#1c1a17]">Recent orders</h2>
+            <p className="text-xs sm:text-sm text-[#5f4b3f]">
+              All customer orders from DynamoDB. Click refresh to sync the latest data.
             </p>
           </div>
-          <Link href="/admin/products" className="text-sm font-medium text-violet-300 hover:text-white">
+          <Link
+            href="/admin/products"
+            className="text-xs sm:text-sm font-medium text-[#b7472f] hover:underline underline-offset-4"
+          >
             Configure catalogue →
           </Link>
         </header>
 
-        <div className="mt-6 overflow-hidden rounded-xl border border-slate-800">
-          <table className="min-w-full divide-y divide-slate-800">
-            <thead className="bg-slate-900/70">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-[#f1e3d5] bg-white/90">
+          <table className="min-w-full divide-y divide-[#f1e3d5]">
+            <thead className="bg-[#fff8f1]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Order</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">Total</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">Placed</th>
+                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.25em] text-[#b59b84]">Order</th>
+                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.25em] text-[#b59b84]">Customer</th>
+                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.25em] text-[#b59b84]">Status</th>
+                <th className="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.25em] text-[#b59b84]">Total</th>
+                <th className="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.25em] text-[#b59b84]">Placed</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 bg-slate-950/40">
+            <tbody className="divide-y divide-[#f1e3d5] bg-[#fffdf8]">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500">
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-[#5f4b3f]">
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" /> Loading orders…
                     </span>
@@ -183,20 +191,20 @@ export default function AdminOrdersPage() {
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500">
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-[#5f4b3f]">
                     No orders yet. Once customers start purchasing, their orders will surface here.
                   </td>
                 </tr>
               ) : (
                 orders.map((order) => (
-                  <tr key={order.id} className="transition hover:bg-slate-900/60">
-                    <td className="px-6 py-4 text-sm text-slate-300">{order.orderNumber}</td>
-                    <td className="px-6 py-4 text-sm text-slate-300">{order.customerEmail}</td>
+                  <tr key={order.id} className="transition hover:bg-[#fff8f1]">
+                    <td className="px-6 py-4 text-sm text-[#1c1a17]">{order.orderNumber}</td>
+                    <td className="px-6 py-4 text-sm text-[#5f4b3f]">{order.customerEmail}</td>
                     <td className="px-6 py-4 text-sm">
                       <StatusBadge status={order.status} />
                     </td>
-                    <td className="px-6 py-4 text-right text-sm text-slate-300">${order.total.toFixed(2)}</td>
-                    <td className="px-6 py-4 text-right text-sm text-slate-300">
+                    <td className="px-6 py-4 text-right text-sm text-[#1c1a17]">${order.total.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-right text-xs sm:text-sm text-[#5f4b3f]">
                       {new Date(order.createdAt).toLocaleString()}
                     </td>
                   </tr>
@@ -206,10 +214,18 @@ export default function AdminOrdersPage() {
           </table>
         </div>
 
-        <footer className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-5 text-sm text-slate-400">
-          <p className="font-medium text-slate-300">✅ Live Integration</p>
+        <footer className="mt-6 rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-5 text-xs sm:text-sm text-[#5f4b3f]">
+          <p className="font-medium text-[#1c1a17]">✅ Live integration</p>
           <p className="mt-2">
-            This view is now connected to the <code className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-200">ecommerce-orders</code> DynamoDB table via <code className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-200">GET /api/orders</code>. Orders sync automatically.
+            This view is connected to the
+            {' '}
+            <code className="rounded bg-[#f4ebe3] px-1.5 py-0.5 text-[11px] text-[#1c1a17]">ecommerce-orders</code>
+            {' '}
+            DynamoDB table via
+            {' '}
+            <code className="rounded bg-[#f4ebe3] px-1.5 py-0.5 text-[11px] text-[#1c1a17]">GET /api/orders</code>.
+            {' '}
+            Orders sync automatically.
           </p>
         </footer>
       </section>
@@ -219,12 +235,12 @@ export default function AdminOrdersPage() {
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+    <div className="rounded-3xl border border-[#d9cfc2] bg-white/85 p-5 sm:p-6 shadow-[0_16px_40px_rgba(28,26,23,0.08)]">
       <div className="flex items-center gap-3">
-        <div className="rounded-lg bg-slate-800/70 p-3 text-slate-100">{icon}</div>
+        <div className="rounded-2xl bg-[#fff4ea] border border-[#f1d3b5] p-3 text-[#b7472f]">{icon}</div>
         <div>
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-600">{label}</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+          <p className="text-[11px] sm:text-xs uppercase tracking-[0.35em] text-[#b59b84]">{label}</p>
+          <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-semibold text-[#1c1a17]">{value}</p>
         </div>
       </div>
     </div>
@@ -233,15 +249,19 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 
 function StatusBadge({ status }: { status: OrderSummary["status"] }) {
   const map = {
-    pending: "bg-amber-500/20 text-amber-200",
-    processing: "bg-blue-500/20 text-blue-200",
-    shipped: "bg-sky-500/20 text-sky-200",
-    delivered: "bg-emerald-500/20 text-emerald-200",
-    cancelled: "bg-red-500/20 text-red-200",
+    pending: "bg-amber-50 text-amber-700 border border-amber-200",
+    processing: "bg-[#fff2e6] text-[#b7472f] border border-[#f1c9a3]",
+    shipped: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    delivered: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    cancelled: "bg-red-50 text-red-700 border border-red-200",
   } as const;
 
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${map[status] || map.pending}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+        map[status] || map.pending
+      }`}
+    >
       <CheckCircle2 className="h-3.5 w-3.5" />
       <span className="capitalize">{status}</span>
     </span>

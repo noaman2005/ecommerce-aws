@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       name: payload.name || '',
       description: payload.description || '',
       subcategories: payload.subcategories || [],
+      imageUrl: payload.imageUrl || '',
       createdAt: payload.createdAt || now,
       updatedAt: now,
     };
@@ -47,7 +48,7 @@ export async function PUT(req: Request) {
     const expressionAttributeNames: Record<string, string> = {};
     const expressionAttributeValues: Record<string, unknown> = {};
 
-    const allowed = ['name', 'description', 'subcategories'];
+    const allowed = ['name', 'description', 'subcategories', 'imageUrl'];
     allowed.forEach((field) => {
       if (payload[field] !== undefined) {
         updateExpression.push(`#${field} = :${field}`);

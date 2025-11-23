@@ -112,7 +112,7 @@ export default function ImageUpload({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {images.map((image, index) => (
             <div key={index} className="relative group">
-              <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+              <div className="aspect-square rounded-2xl overflow-hidden bg-[#f4ebe3] border border-[#d9cfc2]">
                 <img
                   src={image}
                   alt={`Product image ${index + 1}`}
@@ -121,7 +121,7 @@ export default function ImageUpload({
               </div>
               <button
                 onClick={() => removeImage(index)}
-                className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-3 right-3 bg-[#b7472f] text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 type="button"
               >
                 <X className="w-4 h-4" />
@@ -155,7 +155,7 @@ export default function ImageUpload({
               {uploading ? 'Uploading...' : `Upload Images (${images.length}/${maxImages})`}
             </Button>
           </label>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-[#5f4b3f] mt-2">
             Supported formats: JPG, PNG, GIF. Max size: 5MB per image.
           </p>
         </div>
@@ -163,10 +163,10 @@ export default function ImageUpload({
 
       {/* Empty State */}
       {images.length === 0 && (
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-          <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 mb-2">No images uploaded yet</p>
-          <p className="text-sm text-gray-500">
+        <div className="border-2 border-dashed border-[#d9cfc2] rounded-2xl p-8 text-center bg-white/60">
+          <ImageIcon className="w-12 h-12 text-[#d9cfc2] mx-auto mb-4" />
+          <p className="text-[#5f4b3f] mb-2">No images uploaded yet</p>
+          <p className="text-sm text-[#9c8a7a]">
             Add images to showcase your product
           </p>
         </div>

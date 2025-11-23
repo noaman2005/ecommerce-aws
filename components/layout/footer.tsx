@@ -1,18 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
+import { APP_NAME } from '@/lib/constants';
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-slate-900 text-slate-300 mt-auto">
+    <footer className="bg-[#1f1c18] text-[#f7f3ee] mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1">
-            <h3 className="text-white text-xl font-bold mb-4">Paper & Ink</h3>
-            <p className="text-sm">
-              Beautiful stationery for everyday creativity — currently for viewing only. Delivery starts soon.
+            <h3 className="text-[#fff1e6] text-xl font-bold mb-4">{APP_NAME}</h3>
+            <p className="text-sm text-[#d6c8b9]">
+              Artisan stationery and mindful writing tools curated for calm, creative moments.
             </p>
           </div>
 
@@ -78,8 +79,8 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-8 pt-8 text-sm text-center">
-          <p>&copy; {currentYear} Paper & Ink. All rights reserved.</p>
+        <div className="border-t border-[#2f281f] mt-8 pt-8 text-sm text-center text-[#d6c8b9]">
+          <p>&copy; {currentYear} {APP_NAME}. All rights reserved.</p>
         </div>
       </div>
     </footer>

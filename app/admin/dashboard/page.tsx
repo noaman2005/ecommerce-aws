@@ -38,16 +38,18 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.35em] text-slate-500">Overview</p>
-          <h1 className="mt-1 text-3xl font-semibold text-white">Welcome back, {user?.name ?? "Admin"}</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Track store performance, monitor stock levels, and manage your catalogue in real time.
+          <p className="text-[11px] sm:text-xs uppercase tracking-[0.35em] text-[#5f4b3f]">Admin overview</p>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-semibold text-[#1c1a17]">
+            Welcome back, {user?.name ?? "Admin"}
+          </h1>
+          <p className="mt-2 text-sm text-[#5f4b3f] max-w-xl">
+            Keep an eye on products, inventory health and orders from a calm, paper-inspired workspace.
           </p>
         </div>
         <button
           type="button"
           onClick={() => refresh()}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800"
+          className="inline-flex items-center gap-2 rounded-full border border-[#d9cfc2] bg-white/80 px-4 py-2 text-xs sm:text-sm font-medium text-[#5f4b3f] shadow-sm hover:bg-[#f4ebe3] transition-colors"
           disabled={isLoading}
         >
           <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
@@ -56,7 +58,7 @@ export default function AdminDashboard() {
       </header>
 
       {isError && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           Failed to load products from the backend. Please try again shortly.
         </div>
       )}
@@ -85,25 +87,25 @@ export default function AdminDashboard() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-2">
+        <div className="rounded-3xl border border-[#d9cfc2] bg-white/85 p-5 sm:p-6 shadow-[0_16px_40px_rgba(28,26,23,0.08)] lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white">Latest products</h2>
-              <p className="text-sm text-slate-500">Recently added or updated items</p>
+              <h2 className="text-base sm:text-lg font-semibold text-[#1c1a17]">Latest products</h2>
+              <p className="text-xs sm:text-sm text-[#5f4b3f]">Recently added or updated stationery pieces</p>
             </div>
             <Link
               href="/admin/products"
-              className="text-sm font-medium text-slate-300 hover:text-white"
+              className="text-xs sm:text-sm font-medium text-[#b7472f] hover:underline underline-offset-4"
             >
               Manage products →
             </Link>
           </div>
 
-          <div className="mt-6 divide-y divide-slate-800 border border-slate-800 rounded-xl overflow-hidden">
+          <div className="mt-5 sm:mt-6 divide-y divide-[#f1e3d5] border border-[#f1e3d5] rounded-2xl overflow-hidden bg-white/90">
             {isLoading ? (
-              <div className="p-6 text-center text-sm text-slate-500">Loading products…</div>
+              <div className="p-6 text-center text-sm text-[#5f4b3f]">Loading products…</div>
             ) : products.length === 0 ? (
-              <div className="p-6 text-center text-sm text-slate-500">
+              <div className="p-6 text-center text-sm text-[#5f4b3f]">
                 No products found. Start by adding your first product.
               </div>
             ) : (
@@ -112,14 +114,17 @@ export default function AdminDashboard() {
                 .sort((a, b) => Number(new Date(b.updatedAt)) - Number(new Date(a.updatedAt)))
                 .slice(0, 5)
                 .map((product) => (
-                  <article key={product.id} className="flex items-center justify-between gap-4 bg-slate-900/40 p-4">
+                  <article
+                    key={product.id}
+                    className="flex items-center justify-between gap-4 bg-[#fffdf8] px-4 py-3 sm:px-5 sm:py-4"
+                  >
                     <div>
-                      <p className="text-sm font-semibold text-white">{product.name}</p>
-                      <p className="text-xs text-slate-500 line-clamp-1">{product.description}</p>
+                      <p className="text-sm font-semibold text-[#1c1a17] line-clamp-1">{product.name}</p>
+                      <p className="text-xs text-[#5f4b3f] line-clamp-1">{product.description}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-slate-200">{currency.format(product.price)}</p>
-                      <p className="text-xs text-slate-500">Stock: {product.stock ?? 0}</p>
+                      <p className="text-sm font-semibold text-[#b7472f]">{currency.format(product.price)}</p>
+                      <p className="text-xs text-[#5f4b3f]">Stock: {product.stock ?? 0}</p>
                     </div>
                   </article>
                 ))
@@ -127,23 +132,23 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-3xl border border-[#d9cfc2] bg-white/85 p-5 sm:p-6 shadow-[0_16px_40px_rgba(28,26,23,0.08)]">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white">Low stock alert</h2>
-              <p className="text-sm text-slate-500">Products with under 10 units available</p>
+              <h2 className="text-base sm:text-lg font-semibold text-[#1c1a17]">Low stock alert</h2>
+              <p className="text-xs sm:text-sm text-[#5f4b3f]">Products with under 10 units available</p>
             </div>
-            <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-semibold text-orange-300">
+            <span className="rounded-full bg-[#fff2e6] px-3 py-1 text-xs font-semibold text-[#b7472f] border border-[#f1c9a3]">
               {isLoading ? "–" : stats.lowStock}
             </span>
           </div>
 
           <div className="mt-6 space-y-4">
             {isLoading ? (
-              <p className="text-sm text-slate-500">Checking stock levels…</p>
+              <p className="text-sm text-[#5f4b3f]">Checking stock levels…</p>
             ) : stats.lowStock === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-slate-800 bg-slate-900/40 p-6 text-center text-sm text-slate-400">
-                <AlertTriangle className="h-6 w-6 text-slate-500" />
+              <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-6 text-center text-sm text-[#5f4b3f]">
+                <AlertTriangle className="h-6 w-6 text-[#c3743a]" />
                 All products look healthy.
               </div>
             ) : (
@@ -152,12 +157,15 @@ export default function AdminDashboard() {
                 .sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0))
                 .slice(0, 5)
                 .map((product) => (
-                  <div key={product.id} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+                  <div
+                    key={product.id}
+                    className="flex items-center justify-between rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4"
+                  >
                     <div>
-                      <p className="text-sm font-semibold text-white">{product.name}</p>
-                      <p className="text-xs text-slate-500">{product.categoryId}</p>
+                      <p className="text-sm font-semibold text-[#1c1a17] line-clamp-1">{product.name}</p>
+                      <p className="text-xs text-[#5f4b3f]">{product.categoryId}</p>
                     </div>
-                    <span className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-semibold text-red-300">
+                    <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 border border-red-200">
                       {product.stock ?? 0} left
                     </span>
                   </div>
@@ -167,19 +175,19 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-3xl border border-[#d9cfc2] bg-white/85 p-5 sm:p-6 shadow-[0_16px_40px_rgba(28,26,23,0.08)]">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-white">Orders snapshot</h2>
-            <p className="text-sm text-slate-500">
+            <h2 className="text-base sm:text-lg font-semibold text-[#1c1a17]">Orders snapshot</h2>
+            <p className="text-xs sm:text-sm text-[#5f4b3f]">
               Order analytics will populate automatically once order backend endpoints are available.
             </p>
           </div>
-          <Link href="/admin/orders" className="text-sm font-medium text-slate-300 hover:text-white">
+          <Link href="/admin/orders" className="text-xs sm:text-sm font-medium text-[#b7472f] hover:underline underline-offset-4">
             View orders →
           </Link>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-5 sm:mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <PlaceholderStat label="Total orders" value="0" />
           <PlaceholderStat label="Pending" value="0" />
           <PlaceholderStat label="Completed" value="0" />
@@ -200,22 +208,22 @@ function StatCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+    <div className="rounded-3xl border border-[#d9cfc2] bg-white/85 p-5 sm:p-6 shadow-[0_16px_40px_rgba(28,26,23,0.08)]">
       <div className="flex items-center justify-between">
-        <div className="rounded-lg bg-slate-800/70 p-3 text-slate-100">{icon}</div>
-        <span className="text-xs uppercase tracking-[0.3em] text-slate-600">Realtime</span>
+        <div className="rounded-2xl bg-[#fff4ea] border border-[#f1d3b5] p-3 text-[#b7472f]">{icon}</div>
+        <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#b59b84]">Realtime</span>
       </div>
-      <p className="mt-6 text-sm text-slate-400">{label}</p>
-      <p className="text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-4 sm:mt-5 text-xs sm:text-sm text-[#5f4b3f]">{label}</p>
+      <p className="text-xl sm:text-2xl font-semibold text-[#1c1a17]">{value}</p>
     </div>
   );
 }
 
 function PlaceholderStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
-      <p className="text-xs uppercase tracking-[0.3em] text-slate-600">{label}</p>
-      <p className="mt-3 text-xl font-semibold text-slate-200">{value}</p>
+    <div className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4">
+      <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#b59b84]">{label}</p>
+      <p className="mt-2 sm:mt-3 text-lg sm:text-xl font-semibold text-[#1c1a17]">{value}</p>
     </div>
   );
 }

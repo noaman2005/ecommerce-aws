@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Providers } from "./providers";
 import { AppShell } from "@/components/app-shell";
+import { APP_NAME, APP_TAGLINE } from "@/lib/constants";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Paper & Ink - Beautiful Stationery",
-  description: "Curated stationery and writing supplies for everyday creativity",
+  title: `${APP_NAME} | ${APP_TAGLINE}`,
+  description: APP_TAGLINE,
   keywords: ["stationery", "notebooks", "pens", "planners", "art supplies", "paper"],
 };
 

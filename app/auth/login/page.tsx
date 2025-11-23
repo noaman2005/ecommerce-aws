@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/lib/store/auth-store';
-import { ADMIN_EMAIL } from '@/lib/constants';
+import { ADMIN_EMAIL, APP_NAME, APP_TAGLINE } from '@/lib/constants';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -85,18 +85,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#fffdf8] via-[#fef3eb] to-[#f7ebe0] py-12 px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full space-y-8 bg-slate-800 border border-slate-700 p-8 rounded-xl shadow-xl"
+        className="max-w-md w-full space-y-8 bg-white/80 border border-[#d9cfc2] p-10 rounded-3xl shadow-[0_25px_60px_rgba(28,26,23,0.08)] backdrop-blur"
       >
         <div>
-          <h2 className="text-center text-3xl font-bold text-white">
-            Welcome Back
+          <p className="text-xs uppercase tracking-[0.4em] text-[#5f4b3f] text-center">{APP_NAME}</p>
+          <h2 className="text-center text-3xl font-semibold text-[#1c1a17] mt-2">
+            Welcome back to the studio
           </h2>
-          <p className="mt-2 text-center text-sm text-slate-300">
-            Sign in to your account
+          <p className="mt-2 text-center text-sm text-[#5f4b3f]">
+            {APP_TAGLINE}
           </p>
         </div>
 
@@ -119,41 +120,26 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500"
-              />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 block text-sm text-slate-300"
-              >
-                Remember me
-              </label>
-            </div>
-
+          <div className="flex items-center justify-between text-sm">
             <div className="text-sm">
               <Link
                 href={`/auth/forgot-password?email=${encodeURIComponent(watchedEmail || '')}`}
-                className="font-medium text-blue-400 hover:text-blue-300"
+                className="font-medium text-[#b7472f] hover:text-[#c3743a]"
               >
                 Forgot password?
               </Link>
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0" isLoading={isLoading}>
+          <Button type="submit" className="w-full bg-[#b7472f] hover:bg-[#c3743a] text-white border-0" isLoading={isLoading}>
             Sign In
           </Button>
 
           <div className="text-center text-sm">
-            <span className="text-slate-300">Don&apos;t have an account? </span>
+            <span className="text-[#5f4b3f]">Don&apos;t have an account? </span>
             <Link
               href="/auth/signup"
-              className="font-medium text-blue-400 hover:text-blue-300"
+              className="font-medium text-[#b7472f] hover:text-[#c3743a]"
             >
               Sign up
             </Link>
