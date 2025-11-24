@@ -111,6 +111,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             <div className="flex items-center gap-3">
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-2 rounded-full border border-[#d9cfc2] bg-white px-3 py-2 text-xs sm:text-sm text-[#5f4b3f] hover:bg-[#f4ebe3]"
+              >
+                <span>View shop</span>
+              </Link>
               <div className="text-right">
                 <p className="text-sm font-semibold text-[#1c1a17]">{user?.name || 'Admin'}</p>
                 <p className="text-xs text-[#5f4b3f]">{user?.email}</p>

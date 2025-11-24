@@ -8,6 +8,9 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCartStore } from '@/lib/store/cart-store';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/utils/currency';
+
+const SHOP_WHATSAPP = '919892911665';
 
 export default function CartPage() {
   const { items, total, updateQuantity, removeItem, clearCart } = useCartStore();
@@ -63,7 +66,15 @@ export default function CartPage() {
                 <div className="flex gap-4">
                   {/* Product Image */}
                   <div className="relative w-24 h-24 flex-shrink-0 bg-[#f4ebe3] rounded-2xl overflow-hidden">
-                    <ShoppingBag className="w-12 h-12 text-[#d9cfc2] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                    {item.product.images && item.product.images.length > 0 ? (
+                      <img
+                        src={item.product.images[0]}
+                        alt={item.product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <ShoppingBag className="w-12 h-12 text-[#d9cfc2] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                    )}
                   </div>
 
                   {/* Product Details */}
@@ -78,7 +89,7 @@ export default function CartPage() {
                       {item.product.description}
                     </p>
                     <p className="text-[#b7472f] font-bold text-xl mt-2">
-                      ${item.product.price.toFixed(2)}
+                      {formatCurrency(item.product.price)}
                     </p>
                   </div>
 
@@ -91,26 +102,26 @@ export default function CartPage() {
                       <Trash2 className="w-5 h-5" />
                     </button>
 
-                    <div className="flex items-center gap-2 bg-[#f6f1ec] rounded-lg">
+                    <div className="flex items-center gap-2 bg-white border border-[#f1e3d5] rounded-full px-3 py-1 text-[#1c1a17]">
                       <button
                         onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
                         disabled={item.quantity <= 1}
-                        className="p-2 hover:bg-[#f4ebe3] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1.5 text-[#b7472f] hover:bg-[#fef3eb] rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
-                      <span className="w-12 text-center font-semibold">{item.quantity}</span>
+                      <span className="w-10 text-center font-semibold tracking-wide">{item.quantity}</span>
                       <button
                         onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
                         disabled={item.quantity >= item.product.stock}
-                        className="p-2 hover:bg-[#f4ebe3] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1.5 text-[#b7472f] hover:bg-[#fef3eb] rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
 
                     <p className="text-[#1c1a17] font-bold">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      {formatCurrency(item.product.price * item.quantity)}
                     </p>
                   </div>
                 </div>
@@ -130,59 +141,34 @@ export default function CartPage() {
             </Button>
           </div>
 
-          {/* Order Summary */}
+          {/* Coming Soon */}
           <div className="lg:col-span-1">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-xl shadow-sm p-6 sticky top-24"
+              className="bg-white/85 border border-[#f1e3d5] rounded-3xl p-6 sticky top-24 shadow-[0_15px_40px_rgba(28,26,23,0.06)]"
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+              <p className="text-xs uppercase tracking-[0.4em] text-[#b7472f]">Next phase</p>
+              <h2 className="text-2xl font-semibold text-[#1c1a17] mt-2">Checkout coming soon</h2>
+              <p className="text-[#5f4b3f] mt-3">
+                We&rsquo;re polishing the payment flow. For now, save your cart and reach us on WhatsApp or visit the
+                Kurla store to complete your purchase.
+              </p>
 
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
-                  <span className="text-green-600">Free</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Tax</span>
-                  <span>${(total * 0.1).toFixed(2)}</span>
-                </div>
-                <div className="border-t border-gray-200 pt-3">
-                  <div className="flex justify-between text-lg font-bold text-gray-900">
-                    <span>Total</span>
-                    <span>${(total * 1.1).toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <Link href="/checkout">
-                <Button className="w-full" size="lg">
-                  Proceed to Checkout
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-
-              <Link href="/products">
-                <Button variant="outline" className="w-full mt-3">
-                  Continue Shopping
-                </Button>
-              </Link>
-
-              {/* Trust Badges */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <p className="text-sm text-gray-600 text-center mb-3">
-                  Secure checkout powered by AWS
-                </p>
-                <div className="flex justify-center gap-4 text-gray-400">
-                  <div className="text-xs">🔒 Secure</div>
-                  <div className="text-xs">✓ Verified</div>
-                  <div className="text-xs">⚡ Fast</div>
-                </div>
+              <div className="mt-6 space-y-3">
+                <a
+                  href={`https://wa.me/${SHOP_WHATSAPP}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold bg-[#25D366] text-white hover:bg-[#1ebe5a] transition-colors"
+                >
+                  Message us on WhatsApp
+                </a>
+                <Link href="/products" className="inline-flex w-full">
+                  <Button variant="outline" className="w-full">
+                    Continue shopping
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           </div>

@@ -71,19 +71,59 @@ const request = async <T>(path: string, init: RequestInit = {}, opts: FetchOptio
 };
 
 export const getProducts = async (opts: FetchOptions = {}): Promise<Product[]> => {
-  const data = await request<Product[] | { items?: Product[] }>('/products', { method: 'GET' }, opts);
-  if (Array.isArray(data)) {
-    DEBUG && console.debug('[api] getProducts -> array length', data.length);
-    return data;
-  }
+  const aggregated: Product[] = [];
+  const PAGE_LIMIT = 100;
+  let lastKey: string | null = null;
+  let pageGuard = 0;
 
-  if (data && typeof data === 'object' && Array.isArray(data.items)) {
-    DEBUG && console.debug('[api] getProducts -> items length', data.items.length);
-    return data.items;
-  }
+  do {
+    const params = new URLSearchParams();
+    if (PAGE_LIMIT) {
+      params.set('limit', String(PAGE_LIMIT));
+    }
+    if (lastKey) {
+      params.set('lastKey', lastKey);
+    }
+    const query = params.toString();
+    const path = `/products${query ? `?${query}` : ''}`;
 
-  DEBUG && console.debug('[api] getProducts -> empty result');
-  return [];
+    const data = await request<Product[] | { items?: Product[]; lastKey?: string | null }>(path, { method: 'GET' }, opts);
+
+    let items: Product[] = [];
+    let nextKey: string | null = null;
+
+    if (Array.isArray(data)) {
+      DEBUG && console.debug('[api] getProducts page -> array length', data.length);
+      items = data;
+    } else if (data && typeof data === 'object') {
+      if (Array.isArray(data.items)) {
+        DEBUG && console.debug('[api] getProducts page -> items length', data.items.length);
+        items = data.items;
+      }
+      if (typeof data.lastKey === 'string' && data.lastKey.length > 0) {
+        nextKey = data.lastKey;
+      } else if (data.lastKey && typeof data.lastKey === 'object') {
+        // Some backends may return the raw LastEvaluatedKey object; encode it for the next request.
+        try {
+          nextKey = encodeURIComponent(JSON.stringify(data.lastKey));
+        } catch {
+          nextKey = null;
+        }
+      }
+    } else {
+      DEBUG && console.debug('[api] getProducts page -> empty payload');
+    }
+
+    aggregated.push(...items);
+    lastKey = nextKey;
+    pageGuard += 1;
+
+    if (!lastKey || items.length === 0 || pageGuard > 25) {
+      break;
+    }
+  } while (true);
+
+  return aggregated;
 };
 
 export const createProduct = async (data: Partial<Product>, opts: FetchOptions = {}): Promise<Product> => {

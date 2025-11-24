@@ -12,6 +12,7 @@ import { useCartStore } from '@/lib/store/cart-store';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { toast } from 'sonner';
 import { useProducts } from '@/lib/hooks/use-products';
+import { formatCurrency } from '@/lib/utils/currency';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -146,7 +147,7 @@ export default function ProductDetailPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
 
               <p className="text-4xl font-bold text-gray-900 mb-6">
-                ${product.price.toFixed(2)}
+                {formatCurrency(product.price)}
               </p>
             </div>
 

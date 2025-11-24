@@ -108,29 +108,79 @@ export default function ContactPage() {
                 <p className="font-semibold text-[#1c1a17] tracking-[0.2em] uppercase text-[11px]">
                   Store hours
                 </p>
-                <p>Monday – Saturday: 10:00 AM – 9:00 PM</p>
-                <p>Sunday: 11:00 AM – 8:00 PM</p>
+                <p>Monday – Saturday: 10:30 AM – 10:00 PM</p>
+                <p>Sunday: 11:30 AM – 10:00 PM</p>
               </div>
             </div>
 
-            {/* Map embed */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="rounded-3xl overflow-hidden border border-[#d9cfc2] shadow-[0_20px_40px_rgba(28,26,23,0.08)] bg-white"
-            >
-              <div className="aspect-[4/3] w-full">
-                <iframe
-                  title="Nisha Stationery location"
-                  src="https://www.google.com/maps?q=19.0656282,72.8759043&z=18&output=embed"
-                  className="w-full h-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  allowFullScreen
-                />
-              </div>
-            </motion.div>
+            {/* Map embed + directions */}
+            <div className="space-y-4">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="rounded-3xl overflow-hidden border border-[#d9cfc2] shadow-[0_20px_40px_rgba(28,26,23,0.08)] bg-white"
+              >
+                <div className="aspect-[4/3] w-full">
+                  <iframe
+                    title="Nisha Stationery location"
+                    src="https://www.google.com/maps?q=19.0656282,72.8759043&z=18&output=embed"
+                    className="w-full h-full border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="rounded-2xl border border-[#f1e3d5] bg-white/80 p-5 shadow-[0_16px_32px_rgba(28,26,23,0.05)]"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">Get directions</p>
+                    <h3 className="text-xl font-semibold text-[#1c1a17] mt-1">
+                      Navigate straight to the Kurla store
+                    </h3>
+                    <p className="text-sm text-[#5f4b3f] mt-1">
+                      Tap below for live navigation, parking info, and ride-share drop points.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href="https://www.google.com/maps/dir/?api=1&destination=19.0656282,72.8759043"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium bg-[#b7472f] hover:bg-[#a1412a] text-white shadow-sm transition-transform duration-150 hover:-translate-y-0.5"
+                    >
+                      Open in Google Maps
+                    </a>
+                    <a
+                      href="https://www.olacabs.com/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium border border-[#d9cfc2] bg-white text-[#5f4b3f] hover:bg-[#f4ebe3] shadow-sm transition-transform duration-150 hover:-translate-y-0.5"
+                    >
+                      Book a cab
+                    </a>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 text-sm text-[#5f4b3f]">
+                  <div className="rounded-xl bg-[#fffaf5] border border-[#f1e3d5] p-3">
+                    <p className="font-medium text-[#1c1a17]">By train</p>
+                    <p>Alight at Kurla Station (East). We’re a 5-min walk from Platform 1 exit.</p>
+                  </div>
+                  <div className="rounded-xl bg-[#fffaf5] border border-[#f1e3d5] p-3">
+                    <p className="font-medium text-[#1c1a17]">By car / bike</p>
+                    <p>Street parking available before 5 PM; use Phoenix Market City parking on weekends.</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>

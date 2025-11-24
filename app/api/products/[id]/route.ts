@@ -4,11 +4,11 @@ import { getProductFromDynamoDB, updateProductInDynamoDB, deleteProductFromDynam
 // GET /api/products/[id] - Get a single product
 export async function GET(
   request: NextRequest,
-  context: any
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context as { params: { id: string } };
+  const { id } = await context.params;
   try {
-    const product = await getProductFromDynamoDB(params.id);
+    const product = await getProductFromDynamoDB(id);
     
     if (!product) {
       return NextResponse.json(
@@ -30,12 +30,12 @@ export async function GET(
 // PUT /api/products/[id] - Update a product
 export async function PUT(
   request: NextRequest,
-  context: any
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context as { params: { id: string } };
+  const { id } = await context.params;
   try {
     const body = await request.json();
-    const updatedProduct = await updateProductInDynamoDB(params.id, body);
+    const updatedProduct = await updateProductInDynamoDB(id, body);
     return NextResponse.json(updatedProduct);
   } catch (error: any) {
     console.error('Error updating product:', error);
@@ -55,12 +55,12 @@ export async function PUT(
 // DELETE /api/products/[id] - Delete a product
 export async function DELETE(
   request: NextRequest,
-  context: any
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context as { params: { id: string } };
+  const { id } = await context.params;
   try {
-    await deleteProductFromDynamoDB(params.id);
-    return NextResponse.json({ id: params.id });
+    await deleteProductFromDynamoDB(id);
+    return NextResponse.json({ id });
   } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json(

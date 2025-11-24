@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/store/cart-store';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/utils/currency';
 
 interface ProductCardProps {
   product: Product;
@@ -41,22 +42,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
 
-        <div className="p-4">
-          <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-1">
+        <div className="p-3 sm:p-4 flex flex-col gap-2">
+          <h3 className="font-semibold text-base sm:text-lg text-gray-900 line-clamp-1">
             {product.name}
           </h3>
           
           {product.categoryName && (
-            <p className="text-sm text-gray-500 mb-2">{product.categoryName}</p>
+            <p className="text-xs text-gray-500">{product.categoryName}</p>
           )}
 
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-            {product.description}
-          </p>
-
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold text-gray-900">
-              ${product.price.toFixed(2)}
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xl sm:text-2xl font-semibold text-gray-900">
+              {formatCurrency(product.price)}
             </span>
 
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -64,6 +61,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 size="sm"
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
+                className="px-3 sm:px-4"
               >
                 <ShoppingCart className="w-4 h-4 mr-1" />
                 Add
