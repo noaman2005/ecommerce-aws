@@ -25,15 +25,19 @@ export default function AdminCategoriesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [activeTab, setActiveTab] = useState<"categories" | "assignments">("categories");
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
+  const [productTab, setProductTab] = useState<"all" | "category">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedAssignmentCategory, setSelectedAssignmentCategory] = useState<string>("");
-  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
-  const [isAssigning, setIsAssigning] = useState(false);
+  const [assignmentFilter, setAssignmentFilter] = useState<"all" | "assigned" | "unassigned">("all");
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [bulkRows, setBulkRows] = useState<CategoryRecord[]>([]);
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkInfo, setBulkInfo] = useState<string | null>(null);
   const [isBulkSubmitting, setIsBulkSubmitting] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   useEffect(() => {
     // Try server API first; fall back to localStorage if API unavailable
@@ -80,7 +84,7 @@ export default function AdminCategoriesPage() {
         const res = await fetch("/api/products");
         if (!res.ok) return;
         const data = await res.json();
-        const list = Array.isArray(data) ? data : data?.items || data?.data || [];
+        const list: Product[] = Array.isArray(data) ? data : data?.items || data?.data || [];
         setProducts(list);
       } catch (error) {
         console.error("Failed to load product counts", error);
@@ -91,7 +95,7 @@ export default function AdminCategoriesPage() {
 
   useEffect(() => {
     const counts: Record<string, number> = {};
-    products.forEach((product) => {
+    products.forEach((product: Product) => {
       if (product?.categoryId) {
         counts[product.categoryId] = (counts[product.categoryId] || 0) + 1;
       }
@@ -364,182 +368,182 @@ export default function AdminCategoriesPage() {
 
         {activeTab === "categories" ? (
           <>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="relative w-full sm:w-80">
-              <SearchInput value={search} onChange={setSearch} />
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="relative w-full sm:w-80">
+                  <SearchInput value={search} onChange={setSearch} />
+                </div>
+                <p className="text-sm text-[#5f4b3f]">
+                  {filteredCategories.length} categories ({categories.length} total)
+                </p>
+              </div>
+              <div className="inline-flex items-center gap-1 rounded-full border border-[#e2d5c5] bg-[#fff8f1] px-2 py-1 text-[11px] text-[#5f4b3f]">
+                <span className="uppercase tracking-[0.25em] mr-1">View</span>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("grid")}
+                  className={`px-2 py-0.5 rounded-full border text-xs ${
+                    viewMode === "grid"
+                      ? "border-[#b7472f] bg-[#b7472f] text-white"
+                      : "border-transparent text-[#5f4b3f] hover:border-[#e2d5c5]"
+                  }`}
+                >
+                  Grid
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("list")}
+                  className={`px-2 py-0.5 rounded-full border text-xs ${
+                    viewMode === "list"
+                      ? "border-[#b7472f] bg-[#b7472f] text-white"
+                      : "border-transparent text-[#5f4b3f] hover:border-[#e2d5c5]"
+                  }`}
+                >
+                  List
+                </button>
+              </div>
             </div>
-            <p className="text-sm text-[#5f4b3f]">
-              {filteredCategories.length} categories ({categories.length} total)
-            </p>
-          </div>
-          <div className="inline-flex items-center gap-1 rounded-full border border-[#e2d5c5] bg-[#fff8f1] px-2 py-1 text-[11px] text-[#5f4b3f]">
-            <span className="uppercase tracking-[0.25em] mr-1">View</span>
-            <button
-              type="button"
-              onClick={() => setViewMode("grid")}
-              className={`px-2 py-0.5 rounded-full border text-xs ${
-                viewMode === "grid"
-                  ? "border-[#b7472f] bg-[#b7472f] text-white"
-                  : "border-transparent text-[#5f4b3f] hover:border-[#e2d5c5]"
-              }`}
-            >
-              Grid
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("list")}
-              className={`px-2 py-0.5 rounded-full border text-xs ${
-                viewMode === "list"
-                  ? "border-[#b7472f] bg-[#b7472f] text-white"
-                  : "border-transparent text-[#5f4b3f] hover:border-[#e2d5c5]"
-              }`}
-            >
-              List
-            </button>
-          </div>
-        </div>
 
-        {filteredCategories.length === 0 ? (
-          <div className="mt-6 flex flex-col items-center justify-center gap-4 rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-8 text-center text-sm text-[#5f4b3f]">
-            <FolderTree className="h-10 w-10 text-[#c3743a]" />
-            {categories.length === 0 ? <p>Start by creating your first category.</p> : <p>No categories match your search.</p>}
-          </div>
-        ) : viewMode === "grid" ? (
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filteredCategories.map((category) => (
-              <article key={category.id} className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4 flex flex-col gap-3 shadow-[0_8px_24px_rgba(28,26,23,0.08)]">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.4em] text-[#b59b84]">Category</p>
-                    <h3 className="text-base font-semibold text-[#1c1a17] line-clamp-1">{category.name}</h3>
-                    {category.description && (
-                      <p className="text-xs text-[#5f4b3f] line-clamp-2">{category.description}</p>
-                    )}
-                    <p className="text-[11px] text-[#b59b84] mt-1">
-                      {productCounts[category.id] || 0} product{(productCounts[category.id] || 0) === 1 ? "" : "s"}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => startEdit(category)} aria-label={`Edit ${category.name}`}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => handleDelete(category.id)} aria-label={`Delete ${category.name}`}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+            {filteredCategories.length === 0 ? (
+              <div className="mt-6 flex flex-col items-center justify-center gap-4 rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-8 text-center text-sm text-[#5f4b3f]">
+                <FolderTree className="h-10 w-10 text-[#c3743a]" />
+                {categories.length === 0 ? <p>Start by creating your first category.</p> : <p>No categories match your search.</p>}
+              </div>
+            ) : viewMode === "grid" ? (
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredCategories.map((category) => (
+                  <article key={category.id} className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4 flex flex-col gap-3 shadow-[0_8px_24px_rgba(28,26,23,0.08)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.4em] text-[#b59b84]">Category</p>
+                        <h3 className="text-base font-semibold text-[#1c1a17] line-clamp-1">{category.name}</h3>
+                        {category.description && (
+                          <p className="text-xs text-[#5f4b3f] line-clamp-2">{category.description}</p>
+                        )}
+                        <p className="text-[11px] text-[#b59b84] mt-1">
+                          {productCounts[category.id] || 0} product{(productCounts[category.id] || 0) === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => startEdit(category)} aria-label={`Edit ${category.name}`}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => handleDelete(category.id)} aria-label={`Delete ${category.name}`}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-3 text-[11px] text-[#5f4b3f]">
-                  <div>
-                    <p className="uppercase tracking-[0.3em] text-[#b59b84]">Created</p>
-                    <p className="text-sm font-semibold text-[#1c1a17]">{new Date(category.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="uppercase tracking-[0.3em] text-[#b59b84]">Updated</p>
-                    <p className="text-sm font-semibold text-[#1c1a17]">{new Date(category.updatedAt).toLocaleDateString()}</p>
-                  </div>
-                </div>
+                    <div className="grid grid-cols-2 gap-3 text-[11px] text-[#5f4b3f]">
+                      <div>
+                        <p className="uppercase tracking-[0.3em] text-[#b59b84]">Created</p>
+                        <p className="text-sm font-semibold text-[#1c1a17]">{new Date(category.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="uppercase tracking-[0.3em] text-[#b59b84]">Updated</p>
+                        <p className="text-sm font-semibold text-[#1c1a17]">{new Date(category.updatedAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
 
-                <div>
-                  <p className="text-xs font-medium text-[#5f4b3f] mb-2">Subcategories</p>
-                  <div className="flex flex-wrap gap-2 min-h-[32px]">
-                    {(category.subcategories || []).length === 0 ? (
-                      <span className="text-[11px] text-[#b59b84]">None yet</span>
-                    ) : (
-                      category.subcategories.map((sub) => (
-                        <span key={sub} className="inline-flex items-center gap-1 rounded-full bg-[#f4ebe3] px-2 py-1 text-[11px] text-[#5f4b3f]">
-                          {sub}
-                          <button type="button" className="text-[#b59b84] hover:text-red-500" onClick={() => deleteSubcategory(category.id, sub)} aria-label={`Remove ${sub}`}>
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </span>
-                      ))
-                    )}
-                  </div>
-                </div>
+                    <div>
+                      <p className="text-xs font-medium text-[#5f4b3f] mb-2">Subcategories</p>
+                      <div className="flex flex-wrap gap-2 min-h-[32px]">
+                        {(category.subcategories || []).length === 0 ? (
+                          <span className="text-[11px] text-[#b59b84]">None yet</span>
+                        ) : (
+                          category.subcategories.map((sub) => (
+                            <span key={sub} className="inline-flex items-center gap-1 rounded-full bg-[#f4ebe3] px-2 py-1 text-[11px] text-[#5f4b3f]">
+                              {sub}
+                              <button type="button" className="text-[#b59b84] hover:text-red-500" onClick={() => deleteSubcategory(category.id, sub)} aria-label={`Remove ${sub}`}>
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ))
+                        )}
+                      </div>
+                    </div>
 
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add subcategory"
-                    value={subDraft[category.id] || ""}
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                      setSubDraft((prev) => ({ ...prev, [category.id]: event.target.value }))
-                    }
-                    className="text-sm"
-                  />
-                  <Button variant="outline" onClick={() => addSubcategory(category.id)} disabled={!subDraft[category.id]?.trim()}>
-                    Add
-                  </Button>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-6 space-y-4">
-            {filteredCategories.map((category) => (
-              <article key={category.id} className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-5">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div className="space-y-1">
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-[#b59b84]">Category</p>
-                    <h3 className="text-lg font-semibold text-[#1c1a17]">{category.name}</h3>
-                    {category.description && <p className="text-sm text-[#5f4b3f]">{category.description}</p>}
-                    <p className="text-xs text-[#5f4b3f]">
-                      Created {new Date(category.createdAt).toLocaleDateString()} · Updated {" "}
-                      {new Date(category.updatedAt).toLocaleDateString()}
-                    </p>
-                    <p className="text-[11px] text-[#b59b84]">
-                      {productCounts[category.id] || 0} product{(productCounts[category.id] || 0) === 1 ? "" : "s"}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => startEdit(category)}>
-                      <Pencil className="mr-1 h-4 w-4" />
-                      Edit
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => handleDelete(category.id)}>
-                      <Trash2 className="mr-1 h-4 w-4" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add subcategory"
+                        value={subDraft[category.id] || ""}
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                          setSubDraft((prev) => ({ ...prev, [category.id]: event.target.value }))
+                        }
+                        className="text-sm"
+                      />
+                      <Button variant="outline" onClick={() => addSubcategory(category.id)} disabled={!subDraft[category.id]?.trim()}>
+                        Add
+                      </Button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-6 space-y-4">
+                {filteredCategories.map((category) => (
+                  <article key={category.id} className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-5">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-[0.3em] text-[#b59b84]">Category</p>
+                        <h3 className="text-lg font-semibold text-[#1c1a17]">{category.name}</h3>
+                        {category.description && <p className="text-sm text-[#5f4b3f]">{category.description}</p>}
+                        <p className="text-xs text-[#5f4b3f]">
+                          Created {new Date(category.createdAt).toLocaleDateString()} · Updated {" "}
+                          {new Date(category.updatedAt).toLocaleDateString()}
+                        </p>
+                        <p className="text-[11px] text-[#b59b84]">
+                          {productCounts[category.id] || 0} product{(productCounts[category.id] || 0) === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => startEdit(category)}>
+                          <Pencil className="mr-1 h-4 w-4" />
+                          Edit
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => handleDelete(category.id)}>
+                          <Trash2 className="mr-1 h-4 w-4" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
 
-                <div className="mt-4 rounded-2xl bg-[#fffefb] border border-[#f1e3d5] p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-[#5f4b3f]">Subcategories</p>
-                    <span className="text-xs text-[#b59b84]">{category.subcategories.length} items</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(category.subcategories || []).length === 0 ? (
-                      <span className="text-xs text-[#b59b84]">No subcategories yet.</span>
-                    ) : (
-                      category.subcategories.map((sub) => (
-                        <span key={sub} className="inline-flex items-center gap-1 rounded-full bg-[#f4ebe3] px-3 py-1 text-xs text-[#5f4b3f]">
-                          {sub}
-                          <button type="button" className="text-[#b59b84] hover:text-red-500" onClick={() => deleteSubcategory(category.id, sub)} aria-label={`Remove ${sub}`}>
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </span>
-                      ))
-                    )}
-                  </div>
-                  <div className="flex gap-3">
-                    <Input
-                      placeholder="Add a subcategory"
-                      value={subDraft[category.id] || ""}
-                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                        setSubDraft((prev) => ({ ...prev, [category.id]: event.target.value }))
-                      }
-                    />
-                    <Button variant="outline" onClick={() => addSubcategory(category.id)} disabled={!subDraft[category.id]?.trim()}>
-                      Add
-                    </Button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+                    <div className="mt-4 rounded-2xl bg-[#fffefb] border border-[#f1e3d5] p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-[#5f4b3f]">Subcategories</p>
+                        <span className="text-xs text-[#b59b84]">{category.subcategories.length} items</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(category.subcategories || []).length === 0 ? (
+                          <span className="text-xs text-[#b59b84]">No subcategories yet.</span>
+                        ) : (
+                          category.subcategories.map((sub) => (
+                            <span key={sub} className="inline-flex items-center gap-1 rounded-full bg-[#f4ebe3] px-3 py-1 text-xs text-[#5f4b3f]">
+                              {sub}
+                              <button type="button" className="text-[#b59b84] hover:text-red-500" onClick={() => deleteSubcategory(category.id, sub)} aria-label={`Remove ${sub}`}>
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ))
+                        )}
+                      </div>
+                      <div className="flex gap-3">
+                        <Input
+                          placeholder="Add a subcategory"
+                          value={subDraft[category.id] || ""}
+                          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                            setSubDraft((prev) => ({ ...prev, [category.id]: event.target.value }))
+                          }
+                        />
+                        <Button variant="outline" onClick={() => addSubcategory(category.id)} disabled={!subDraft[category.id]?.trim()}>
+                          Add
+                        </Button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </>
         ) : (
           <div className="mt-6 space-y-4">
@@ -576,50 +580,67 @@ export default function AdminCategoriesPage() {
                   </Button>
                 </div>
               )}
-            </div>
+              </div>
 
             <div className=" rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <p className="text-sm text-[#5f4b3f]">
                   Assign products to <strong>{selectedAssignmentCategory ? categories.find((c) => c.id === selectedAssignmentCategory)?.name : "—"}</strong>
                 </p>
-                <Button
-                  onClick={async () => {
-                    if (!selectedAssignmentCategory || selectedProductIds.size === 0) return;
-                    setIsAssigning(true);
-                    const toAssign = new Set(selectedProductIds);
-                    try {
-                      for (const productId of selectedProductIds) {
-                        await fetch(`/api/products/${productId}`, {
-                          method: "PUT",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ categoryId: selectedAssignmentCategory }),
-                        });
+                <div className="flex flex-wrap gap-3 items-center">
+                  <select
+                    className="rounded-full border border-[#d9cfc2] bg-white px-3 py-2 text-xs text-[#1c1a17] focus:border-[#b7472f] focus:outline-none focus:ring-2 focus:ring-[#b7472f]/40"
+                    value={assignmentFilter}
+                    onChange={(e) => setAssignmentFilter(e.target.value as any)}
+                  >
+                    <option value="all">All products</option>
+                    <option value="unassigned">Unassigned</option>
+                    <option value="assigned">Assigned</option>
+                  </select>
+                  <Button
+                    onClick={async () => {
+                      if (!selectedAssignmentCategory || selectedProductIds.size === 0) return;
+                      setIsAssigning(true);
+                      const toAssign = new Set(selectedProductIds);
+                      try {
+                        for (const productId of selectedProductIds) {
+                          await fetch(`/api/products/${productId}`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ categoryId: selectedAssignmentCategory }),
+                          });
+                        }
+                        setSelectedProductIds(new Set());
+                        toast.success("Products assigned to category");
+                        setProducts((prev) =>
+                          prev.map((product) =>
+                            toAssign.has(product.id)
+                              ? { ...product, categoryId: selectedAssignmentCategory }
+                              : product
+                          )
+                        );
+                      } catch (error: any) {
+                        toast.error(error?.message || "Failed to assign products");
+                      } finally {
+                        setIsAssigning(false);
                       }
-                      setSelectedProductIds(new Set());
-                      toast.success("Products assigned to category");
-                      setProducts((prev) =>
-                        prev.map((product) =>
-                          toAssign.has(product.id)
-                            ? { ...product, categoryId: selectedAssignmentCategory }
-                            : product
-                        )
-                      );
-                    } catch (error: any) {
-                      toast.error(error?.message || "Failed to assign products");
-                    } finally {
-                      setIsAssigning(false);
-                    }
-                  }}
-                  disabled={!selectedAssignmentCategory || selectedProductIds.size === 0 || isAssigning}
-                  isLoading={isAssigning}
-                >
-                  <ListChecks className="mr-2 h-4 w-4" /> Assign selected
-                </Button>
+                    }}
+                    disabled={!selectedAssignmentCategory || selectedProductIds.size === 0 || isAssigning}
+                    isLoading={isAssigning}
+                  >
+                    <ListChecks className="mr-2 h-4 w-4" /> Assign selected
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
-                {products.map((product) => (
+                {products
+                  .filter((product) => {
+                    if (assignmentFilter === "unassigned") return !product.categoryId;
+                    if (assignmentFilter === "assigned") return !!product.categoryId;
+                    return true;
+                  })
+                  .map((product) => (
                   <button
                     key={product.id}
                     type="button"
@@ -642,9 +663,18 @@ export default function AdminCategoriesPage() {
                   >
                     <div className="text-xs uppercase tracking-[0.3em] text-[#b59b84]">Product</div>
                     <p className="text-sm font-semibold text-[#1c1a17] line-clamp-1">{product.name}</p>
-                    <p className="text-[11px] text-[#b59b84]">
-                      Current: {product.categoryId ? categories.find((c) => c.id === product.categoryId)?.name || product.categoryId : "Unassigned"}
-                    </p>
+                    <div className="flex flex-wrap gap-2 items-center text-[11px] text-[#b59b84]">
+                      <span className="text-[#b59b84]">Current:</span>
+                      <span
+                        className={`px-2 py-1 rounded-full border ${
+                          product.categoryId ? "border-[#d9cfc2] bg-white text-[#1c1a17]" : "border-dashed border-[#d9cfc2] text-[#b59b84]"
+                        }`}
+                      >
+                        {product.categoryId
+                          ? categories.find((c) => c.id === product.categoryId)?.name || product.categoryId
+                          : "Unassigned"}
+                      </span>
+                    </div>
                   </button>
                 ))}
               </div>
