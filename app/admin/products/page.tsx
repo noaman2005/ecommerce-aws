@@ -46,6 +46,7 @@ interface CategoryRecord {
   id: string;
   name: string;
   description?: string;
+  imageUrl?: string;
   subcategories: string[];
   createdAt: string;
   updatedAt: string;
@@ -312,6 +313,22 @@ export default function AdminProductsPage() {
     }
   };
 
+  const setBulkRowCategory = (index: number, categoryId: string) => {
+    setBulkRows((rows) => rows.map((row, i) => (i === index ? { ...row, categoryId } : row)));
+  };
+
+  const setAllBulkCategories = (categoryId: string) => {
+    setBulkRows((rows) => rows.map((row) => ({ ...row, categoryId })));
+  };
+
+  const getCategoryPlaceholder = (categoryId?: string) => {
+    if (!categoryId) return CATEGORY_PLACEHOLDERS.default;
+    const cat = categories.find((c) => c.id === categoryId);
+    if (cat?.imageUrl) return cat.imageUrl;
+    if (CATEGORY_PLACEHOLDERS[categoryId]) return CATEGORY_PLACEHOLDERS[categoryId];
+    return CATEGORY_PLACEHOLDERS.default;
+  };
+
   const handleCsvFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -415,9 +432,7 @@ export default function AdminProductsPage() {
 
     try {
       for (const row of bulkRows) {
-        const categoryFallback = row.categoryId && CATEGORY_PLACEHOLDERS[row.categoryId]
-          ? CATEGORY_PLACEHOLDERS[row.categoryId]
-          : CATEGORY_PLACEHOLDERS.default;
+        const categoryFallback = getCategoryPlaceholder(row.categoryId);
         const payload = {
           name: row.name,
           description: row.description,
@@ -1043,7 +1058,10 @@ export default function AdminProductsPage() {
               <p className="text-sm font-medium text-[#5f4b3f]">
                 Upload a <span className="font-semibold">.csv</span> with columns:
                 <span className="ml-1 text-xs font-mono">name, description, price, stock, imageUrl?, isFeatured?</span>.
-                Only <span className="font-semibold">name, description, price, stock</span> are required — you can assign categories later from the categories tab.
+                Only <span className="font-semibold">name, description, price, stock</span> are required — you can assign categories here in the preview or later in the categories tab.
+              </p>
+              <p className="text-xs text-[#5f4b3f]">
+                If an image URL is missing, we’ll auto-fill a category placeholder when a category is set.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -1067,27 +1085,64 @@ export default function AdminProductsPage() {
           </section>
 
           {bulkRows.length > 0 && (
-            <section className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4 sm:p-5 max-h-72 overflow-auto">
-              <table className="min-w-full text-left text-xs text-[#5f4b3f]">
-                <thead className="bg-[#fff8f1] text-[10px] uppercase tracking-[0.25em] text-[#b59b84]">
-                  <tr>
-                    <th className="px-3 py-2">Name</th>
-                    <th className="px-3 py-2">Price</th>
-                    <th className="px-3 py-2">Stock</th>
-                    <th className="px-3 py-2">Featured</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#f1e3d5] bg-[#fffdf8]">
-                  {bulkRows.map((row, index) => (
-                    <tr key={index}>
-                      <td className="px-3 py-2 max-w-[200px] truncate">{row.name}</td>
-                      <td className="px-3 py-2">{formatCurrency(row.price)}</td>
-                      <td className="px-3 py-2">{row.stock}</td>
-                      <td className="px-3 py-2">{row.featured ? "Yes" : "No"}</td>
+            <section className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4 sm:p-5 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <p className="text-xs text-[#5f4b3f]">
+                  Tip: assign categories now so placeholders can fill images automatically.
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#5f4b3f]">Set all to</span>
+                  <select
+                    onChange={(e) => setAllBulkCategories(e.target.value)}
+                    className="rounded-xl border border-[#d9cfc2] bg-white px-3 py-1 text-xs text-[#1c1a17] focus:border-[#b7472f] focus:outline-none focus:ring-2 focus:ring-[#b7472f]/50"
+                    defaultValue=""
+                  >
+                    <option value="">(no category)</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="max-h-72 overflow-auto rounded-xl border border-[#f1e3d5]">
+                <table className="min-w-full text-left text-xs text-[#5f4b3f]">
+                  <thead className="bg-[#fff8f1] text-[10px] uppercase tracking-[0.25em] text-[#b59b84]">
+                    <tr>
+                      <th className="px-3 py-2">Name</th>
+                      <th className="px-3 py-2">Price</th>
+                      <th className="px-3 py-2">Stock</th>
+                      <th className="px-3 py-2">Category</th>
+                      <th className="px-3 py-2">Featured</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-[#f1e3d5] bg-[#fffdf8]">
+                    {bulkRows.map((row, index) => (
+                      <tr key={index}>
+                        <td className="px-3 py-2 max-w-[180px] truncate">{row.name}</td>
+                        <td className="px-3 py-2">{formatCurrency(row.price)}</td>
+                        <td className="px-3 py-2">{row.stock}</td>
+                        <td className="px-3 py-2">
+                          <select
+                            value={row.categoryId || ""}
+                            onChange={(e) => setBulkRowCategory(index, e.target.value)}
+                            className="w-full rounded-xl border border-[#d9cfc2] bg-white px-2 py-1 text-xs text-[#1c1a17] focus:border-[#b7472f] focus:outline-none focus:ring-2 focus:ring-[#b7472f]/50"
+                          >
+                            <option value="">(none)</option>
+                            {categories.map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-3 py-2">{row.featured ? "Yes" : "No"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </section>
           )}
 
