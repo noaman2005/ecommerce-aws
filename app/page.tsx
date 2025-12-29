@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { getProducts } from '@/lib/storage';
 import { APP_NAME, APP_TAGLINE } from '@/lib/constants';
 import { formatCurrency } from '@/lib/utils/currency';
+import FeaturedCarousel from '@/components/home/featured-carousel';
 
 const COLLECTIONS = [
   {
@@ -23,7 +24,25 @@ const COLLECTIONS = [
 
 export default async function Home() {
   const products = await getProducts();
-  const featuredProducts = (products || []).filter((product) => product.featured).slice(0, 4);
+  const featuredCandidates = (products || []).filter((product) => product.featured);
+  const newArrivals = [...(products || [])]
+    .filter(Boolean)
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, 8);
+
+  const featuredProducts = (() => {
+    const target = 4;
+    const picked: any[] = [];
+    featuredCandidates.forEach((p) => picked.length < target && picked.push(p));
+    if (picked.length < target) {
+      for (const p of newArrivals) {
+        if (picked.find((x) => x.id === p.id)) continue;
+        picked.push(p);
+        if (picked.length >= target) break;
+      }
+    }
+    return picked;
+  })();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#fffdf8] via-[#fef3eb] to-[#f7ebe0] text-[#1c1a17]">
@@ -78,8 +97,8 @@ export default async function Home() {
       {/* FEATURED */}
       {featuredProducts.length > 0 && (
         <section className="py-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 space-y-4">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">Studio picks</p>
                 <h2 className="text-3xl font-semibold text-[#1c1a17]">Featured products</h2>
@@ -89,22 +108,57 @@ export default async function Home() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {featuredProducts.map((product) => (
+            <FeaturedCarousel products={featuredProducts} />
+          </div>
+        </section>
+      )}
+
+      {/* NEW ARRIVALS */}
+      {newArrivals.length > 0 && (
+        <section className="py-16 bg-[#fff8f1]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">New arrivals</p>
+                <h3 className="text-2xl sm:text-3xl font-semibold text-[#1c1a17]">Fresh on the shelves</h3>
+              </div>
+              <Link href="/products" className="text-sm font-semibold text-[#b7472f] flex items-center gap-2">
+                Browse all
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {newArrivals.map((product) => (
                 <Link
                   key={product.id}
                   href={`/products/${product.id}`}
-                  className="block rounded-3xl border border-[#d9cfc2] bg-white p-6 shadow-[0_15px_40px_rgba(28,26,23,0.09)] hover:shadow-[0_20px_50px_rgba(28,26,23,0.15)] transition"
+                  className="group flex h-full flex-col rounded-2xl border border-[#e5d8c8] bg-white p-3 shadow-[0_12px_30px_rgba(28,26,23,0.06)] hover:shadow-[0_16px_38px_rgba(28,26,23,0.1)] transition"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">{product.categoryName || 'Stationery'}</p>
-                      <h3 className="text-xl font-semibold text-[#1c1a17] mt-2">{product.name}</h3>
-                      <p className="text-[#5f4b3f] mt-2 text-sm line-clamp-2">
-                        {product.description || 'A calm, well-made essential chosen for daily desk rituals.'}
-                      </p>
-                    </div>
-                    <p className="text-xl font-bold text-[#b7472f]">{formatCurrency(product.price)}</p>
+                  <div className="aspect-[4/3] w-full rounded-xl bg-[#f6eee5] border border-[#efe3d5] overflow-hidden mb-2">
+                    {product.images && product.images.length > 0 ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-xs text-[#b59b84] px-3 text-center">
+                        {product.name}
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1 flex-1">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-[#b59b84]">
+                      {product.categoryName || product.categoryId || 'Stationery'}
+                    </p>
+                    <h4 className="text-sm sm:text-base font-semibold text-[#1c1a17] line-clamp-2">{product.name}</h4>
+                    <p className="text-xs text-[#5f4b3f] line-clamp-2">
+                      {product.description || 'Selected for everyday study and work.'}
+                    </p>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-sm sm:text-base font-bold text-[#b7472f]">{formatCurrency(product.price)}</span>
+                    <span className="text-[11px] font-semibold text-[#b7472f] group-hover:translate-x-0.5 transition">
+                      View
+                    </span>
                   </div>
                 </Link>
               ))}
@@ -113,65 +167,37 @@ export default async function Home() {
         </section>
       )}
 
-      {/* STORE BENEFITS */}
-      <section className="py-16 bg-[#fff8f1]">
-        <div className="max-w-6xl mx-auto px-4 text-center space-y-6">
-          <div>
-            <p className="text-xs uppercase tracking-[0.6em] text-[#5f4b3f]">Why shop with us</p>
-            <h3 className="text-2xl font-semibold text-[#1c1a17] mt-2">Nisha Stationery advantages</h3>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-            {["Best local pricing", "Trusted Indian brands", "School essentials always in stock", "Friendly, fast service"].map((benefit) => (
-              <div key={benefit} className="p-5 bg-white rounded-2xl border border-[#f1d9ca] shadow-[0_12px_30px_rgba(28,26,23,0.08)]">
-                <Star className="w-6 h-6 text-[#b7472f] mx-auto mb-2" />
-                <p className="text-sm font-medium text-[#4c3d34]">{benefit}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SEASONAL CTA */}
-      <section className="py-20 text-center">
-        <div className="max-w-3xl mx-auto px-4 space-y-4">
-          <p className="text-xs uppercase tracking-[0.5em] text-[#b7472f]">Seasonal spotlight</p>
-          <h3 className="text-3xl font-semibold text-[#1c1a17]">Back-to-school essentials are here</h3>
-          <p className="text-[#5f4b3f]">
-            School books, bottles, lunch boxes, geometry kits, and workbook bundles—fresh designs from beloved Indian brands, ready for quick pickup.
-          </p>
-          <Link href="/products">
-            <Button size="lg" className="bg-gradient-to-r from-[#b7472f] to-[#c3743a] text-white">
-              See school supplies
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* COLLECTION HIGHLIGHTS */}
-      <section className="pb-20">
-        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-5">
-          {COLLECTIONS.map((collection) => (
-            <div key={collection.title} className="rounded-3xl border border-[#d9cfc2] bg-white/90 p-8 shadow-[0_15px_40px_rgba(28,26,23,0.08)]">
-              <div className="h-44 rounded-2xl bg-[radial-gradient(circle,_rgba(183,71,47,0.18),_transparent_70%)] mb-6" />
-              <h4 className="text-xl font-semibold text-[#1c1a17]">{collection.title}</h4>
-              <p className="text-[#5f4b3f] mt-3">{collection.copy}</p>
+      {/* TOP PICKS BY CATEGORY */}
+      <section className="pb-20 pt-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">Top picks by category</p>
+              <h3 className="text-2xl sm:text-3xl font-semibold text-[#1c1a17]">Jump to what you need</h3>
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="pb-24">
-        <div className="max-w-5xl mx-auto px-4 text-center space-y-5">
-          <p className="text-xs uppercase tracking-[0.6em] text-[#5f4b3f]">Carefully crafted</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-[#1c1a17]">A slow, beautiful stationery mood</h2>
-          <p className="text-[#5f4b3f] leading-relaxed">
-            We partner with Indian workshops, school distributors, and boutique pen houses to keep shelves stocked with mindful essentials. Each product is chosen for feel, function, and the calm it brings to your creative rituals.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {["Hand-finished", "Ethically sourced", "Community inspired"].map((tag) => (
-              <div key={tag} className="rounded-2xl border border-[#d9cfc2] bg-white px-6 py-5 text-sm font-semibold text-[#5f4b3f]">
-                {tag}
-              </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { title: 'School essentials', copy: 'Bags, bottles, lunch boxes, geometry kits, textbooks.', query: 'school' },
+              { title: 'Art & craft', copy: 'Brushes, sketchbooks, acrylics, origami, hobby kits.', query: 'art' },
+              { title: 'Notebooks & registers', copy: 'Soft-touch journals, long books, practical notebooks.', query: 'notebook' },
+              { title: 'Pens & writing', copy: 'Gel, ballpoint, fineliners, and refill packs.', query: 'pen' },
+            ].map((card) => (
+              <Link
+                key={card.title}
+                href={`/products?search=${encodeURIComponent(card.query)}`}
+                className="rounded-3xl border border-[#d9cfc2] bg-white/90 p-6 shadow-[0_12px_30px_rgba(28,26,23,0.08)] hover:shadow-[0_16px_38px_rgba(28,26,23,0.12)] transition flex flex-col gap-3"
+              >
+                <div className="h-28 rounded-2xl bg-[radial-gradient(circle,_rgba(183,71,47,0.18),_transparent_70%)]" />
+                <div className="space-y-2">
+                  <h4 className="text-xl font-semibold text-[#1c1a17]">{card.title}</h4>
+                  <p className="text-sm text-[#5f4b3f]">{card.copy}</p>
+                </div>
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#b7472f]">
+                  Browse picks
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              </Link>
             ))}
           </div>
         </div>

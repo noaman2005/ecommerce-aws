@@ -33,14 +33,10 @@ export default function HomeCategoriesStrip() {
             <p className="text-sm uppercase tracking-[0.4em] text-[#5f4b3f]">Shop by category</p>
             <h2 className="text-2xl sm:text-3xl font-semibold text-[#1c1a17] mt-2">Start with what you need most</h2>
           </div>
-          <Link href="/categories" className="text-sm font-medium text-[#b7472f] flex items-center gap-2">
-            Browse all categories
-            <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {categories.map((category) => (
+          {categories.slice(0, 8).map((category) => (
             <Link
               key={category.id}
               href={`/products?categoryId=${category.id}`}
@@ -61,6 +57,13 @@ export default function HomeCategoriesStrip() {
               </span>
             </Link>
           ))}
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <Link href="/categories" className="inline-flex items-center gap-2 text-sm font-semibold text-[#b7472f] hover:text-[#9f3b25]">
+            Browse all categories
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

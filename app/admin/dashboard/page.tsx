@@ -1,16 +1,11 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { RefreshCcw, Package, DollarSign, Layers, AlertTriangle, TrendingUp } from "lucide-react";
+import { RefreshCcw, Package, DollarSign, Layers, AlertTriangle, TrendingUp, ImageOff, Tag, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useProducts } from "@/lib/hooks/use-products";
-
-const currency = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 2,
-});
+import { formatCurrency } from "@/lib/utils/currency";
 
 export default function AdminDashboard() {
   const token = useAuthStore((state) => state.token);
@@ -24,6 +19,8 @@ export default function AdminDashboard() {
     const totalValue = products.reduce((sum, product) => sum + product.price * (product.stock ?? 0), 0);
     const lowStock = products.filter((product) => (product.stock ?? 0) < 10).length;
     const uniqueCategories = new Set(products.map((product) => product.categoryId)).size;
+    const unassigned = products.filter((p) => !p.categoryId).length;
+    const noImages = products.filter((p) => !p.images || p.images.length === 0).length;
 
     return {
       totalProducts,
@@ -31,6 +28,8 @@ export default function AdminDashboard() {
       totalValue,
       lowStock,
       uniqueCategories,
+      unassigned,
+      noImages,
     };
   }, [products]);
 
@@ -82,7 +81,34 @@ export default function AdminDashboard() {
         <StatCard
           icon={<DollarSign className="h-6 w-6" />}
           label="Inventory value"
-          value={isLoading ? "–" : currency.format(stats.totalValue)}
+          value={isLoading ? "–" : formatCurrency(stats.totalValue)}
+        />
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <AttentionCard
+          title="No images"
+          helper="Products missing imagery"
+          count={isLoading ? null : stats.noImages}
+          icon={<ImageOff className="h-5 w-5 text-[#b7472f]" />}
+          actionHref="/admin/products"
+          actionLabel="Add images"
+        />
+        <AttentionCard
+          title="Unassigned"
+          helper="Products without a category"
+          count={isLoading ? null : stats.unassigned}
+          icon={<Tag className="h-5 w-5 text-[#b7472f]" />}
+          actionHref="/admin/categories"
+          actionLabel="Assign now"
+        />
+        <AttentionCard
+          title="Low stock"
+          helper="Under 10 units"
+          count={isLoading ? null : stats.lowStock}
+          icon={<AlertTriangle className="h-5 w-5 text-[#c3743a]" />}
+          actionHref="/admin/products"
+          actionLabel="Restock"
         />
       </section>
 
@@ -123,7 +149,7 @@ export default function AdminDashboard() {
                       <p className="text-xs text-[#5f4b3f] line-clamp-1">{product.description}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-[#b7472f]">{currency.format(product.price)}</p>
+                      <p className="text-sm font-semibold text-[#b7472f]">{formatCurrency(product.price)}</p>
                       <p className="text-xs text-[#5f4b3f]">Stock: {product.stock ?? 0}</p>
                     </div>
                   </article>
@@ -178,20 +204,31 @@ export default function AdminDashboard() {
       <section className="rounded-3xl border border-[#d9cfc2] bg-white/85 p-5 sm:p-6 shadow-[0_16px_40px_rgba(28,26,23,0.08)]">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base sm:text-lg font-semibold text-[#1c1a17]">Orders snapshot</h2>
-            <p className="text-xs sm:text-sm text-[#5f4b3f]">
-              Order analytics will populate automatically once order backend endpoints are available.
-            </p>
+            <h2 className="text-base sm:text-lg font-semibold text-[#1c1a17]">Owner checklist</h2>
+            <p className="text-xs sm:text-sm text-[#5f4b3f]">Fast actions to keep the catalog healthy.</p>
           </div>
-          <Link href="/admin/orders" className="text-xs sm:text-sm font-medium text-[#b7472f] hover:underline underline-offset-4">
-            View orders →
+          <Link href="/admin/how-to" className="text-xs sm:text-sm font-medium text-[#b7472f] hover:underline underline-offset-4">
+            Open how-to →
           </Link>
         </div>
-        <div className="mt-5 sm:mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <PlaceholderStat label="Total orders" value="0" />
-          <PlaceholderStat label="Pending" value="0" />
-          <PlaceholderStat label="Completed" value="0" />
-          <PlaceholderStat label="Revenue" value="–" />
+        <div className="mt-5 sm:mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { title: "Bulk upload", helper: "Use CSV template, then backfill images", href: "/admin/products" },
+            { title: "Assign categories", helper: "Filter unassigned and apply", href: "/admin/categories" },
+            { title: "Feature products", helper: "Mark 4+ hero picks", href: "/admin/products" },
+            { title: "Check low stock", helper: "Restock under 10 units", href: "/admin/products" },
+            { title: "Add placeholders", helper: "Drop images into /public/placeholders", href: "/admin/how-to" },
+            { title: "Review new arrivals", helper: "Update photos & categories", href: "/admin/products" },
+          ].map((item) => (
+            <Link
+              key={item.title}
+              href={item.href}
+              className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4 hover:border-[#d9cfc2] hover:shadow-[0_10px_24px_rgba(28,26,23,0.08)] transition"
+            >
+              <p className="text-sm font-semibold text-[#1c1a17]">{item.title}</p>
+              <p className="text-xs text-[#5f4b3f] mt-1">{item.helper}</p>
+            </Link>
+          ))}
         </div>
       </section>
     </div>
@@ -224,6 +261,41 @@ function PlaceholderStat({ label, value }: { label: string; value: string }) {
     <div className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4">
       <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#b59b84]">{label}</p>
       <p className="mt-2 sm:mt-3 text-lg sm:text-xl font-semibold text-[#1c1a17]">{value}</p>
+    </div>
+  );
+}
+
+function AttentionCard({
+  title,
+  helper,
+  count,
+  icon,
+  actionHref,
+  actionLabel,
+}: {
+  title: string;
+  helper: string;
+  count: number | null;
+  icon: React.ReactNode;
+  actionHref: string;
+  actionLabel: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-[#d9cfc2] bg-white/85 p-4 sm:p-5 shadow-[0_12px_30px_rgba(28,26,23,0.08)] space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="rounded-2xl bg-[#fff4ea] border border-[#f1d3b5] p-3 text-[#b7472f]">{icon}</div>
+        <span className="text-xs font-semibold text-[#1c1a17]">
+          {count === null ? "–" : count}
+        </span>
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-[#1c1a17]">{title}</p>
+        <p className="text-xs text-[#5f4b3f]">{helper}</p>
+      </div>
+      <Link href={actionHref} className="inline-flex items-center gap-2 text-sm font-semibold text-[#b7472f]">
+        {actionLabel}
+        <ArrowRight className="w-4 h-4" />
+      </Link>
     </div>
   );
 }

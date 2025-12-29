@@ -34,7 +34,12 @@ type BulkRow = {
   price: number;
   stock: number;
   imageUrl?: string;
+  categoryId?: string;
   featured?: boolean;
+};
+
+const CATEGORY_PLACEHOLDERS: Record<string, string> = {
+  default: "/hero-stationery.jpg",
 };
 
 interface CategoryRecord {
@@ -83,6 +88,8 @@ export default function AdminProductsPage() {
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkInfo, setBulkInfo] = useState<string | null>(null);
   const [isBulkSubmitting, setIsBulkSubmitting] = useState(false);
+  const [isBackfilling, setIsBackfilling] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [productTab, setProductTab] = useState<"all" | "category">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
@@ -287,6 +294,24 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleBulkFeatureToggle = async (flag: boolean) => {
+    if (selectedProductIds.size === 0) return;
+    setIsAssigning(true);
+    try {
+      for (const id of selectedProductIds) {
+        await update(id, { featured: flag });
+      }
+      toast.success(
+        `${flag ? "Marked" : "Unmarked"} ${selectedProductIds.size} product${selectedProductIds.size > 1 ? "s" : ""} as featured`
+      );
+      clearSelection();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update featured state");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
   const handleCsvFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -337,6 +362,7 @@ export default function AdminProductsPage() {
         const priceRaw = cols[idx("price")]?.trim() || "0";
         const stockRaw = cols[idx("stock")]?.trim() || "0";
         const imageUrl = header.includes("imageurl") ? cols[idx("imageurl")]?.trim() || undefined : undefined;
+        const categoryId = header.includes("categoryid") ? cols[idx("categoryid")]?.trim() || undefined : undefined;
         const featuredRaw = header.includes("isfeatured") ? cols[idx("isfeatured")]?.trim().toLowerCase() : "false";
 
         if (!name) {
@@ -357,6 +383,7 @@ export default function AdminProductsPage() {
           price,
           stock,
           imageUrl,
+          categoryId,
           featured: featuredRaw === "true" || featuredRaw === "1" || featuredRaw === "yes",
         });
       }
@@ -388,12 +415,16 @@ export default function AdminProductsPage() {
 
     try {
       for (const row of bulkRows) {
+        const categoryFallback = row.categoryId && CATEGORY_PLACEHOLDERS[row.categoryId]
+          ? CATEGORY_PLACEHOLDERS[row.categoryId]
+          : CATEGORY_PLACEHOLDERS.default;
         const payload = {
           name: row.name,
           description: row.description,
           price: row.price,
           stock: row.stock,
-          images: row.imageUrl ? [row.imageUrl] : [],
+          images: row.imageUrl ? [row.imageUrl] : [categoryFallback],
+          categoryId: row.categoryId,
           featured: row.featured ?? false,
           createdByEmail: ADMIN_EMAIL,
         } as Partial<Product>;
@@ -542,9 +573,31 @@ export default function AdminProductsPage() {
               <Button type="button" variant="outline" size="sm" onClick={clearSelection}>
                 Clear selection
               </Button>
-              <Button type="button" variant="danger" size="sm" onClick={handleBulkDeleteSelected}>
-                Delete selected
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleBulkFeatureToggle(true)}
+                  disabled={isAssigning}
+                  isLoading={isAssigning}
+                >
+                  Mark featured
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleBulkFeatureToggle(false)}
+                  disabled={isAssigning}
+                  isLoading={isAssigning}
+                >
+                  Unmark featured
+                </Button>
+                <Button type="button" variant="danger" size="sm" onClick={handleBulkDeleteSelected}>
+                  Delete selected
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -1011,17 +1064,11 @@ export default function AdminProductsPage() {
                 {bulkError}
               </p>
             )}
-            {bulkInfo && !bulkError && (
-              <p className="text-xs text-[#5f4b3f] mt-1">
-                {bulkInfo}
-              </p>
-            )}
           </section>
 
           {bulkRows.length > 0 && (
-            <section className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4 sm:p-5 space-y-3 max-h-72 overflow-auto">
-              <p className="text-sm font-medium text-[#5f4b3f]">Preview</p>
-              <table className="min-w-full text-xs text-left text-[#5f4b3f]">
+            <section className="rounded-2xl border border-[#f1e3d5] bg-[#fffdf8] p-4 sm:p-5 max-h-72 overflow-auto">
+              <table className="min-w-full text-left text-xs text-[#5f4b3f]">
                 <thead className="bg-[#fff8f1] text-[10px] uppercase tracking-[0.25em] text-[#b59b84]">
                   <tr>
                     <th className="px-3 py-2">Name</th>
