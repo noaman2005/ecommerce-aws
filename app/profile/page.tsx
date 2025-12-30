@@ -248,7 +248,7 @@ export default function ProfilePage() {
                     </p>
                     <h2 className="text-lg sm:text-xl font-semibold text-[#1c1a17]">Password & access</h2>
                     <p className="text-xs sm:text-sm text-[#5f4b3f]">
-                      Choose a strong password to keep your orders and details safe.
+                      Choose a strong password to keep your account safe.
                     </p>
                   </div>
 

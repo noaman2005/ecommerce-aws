@@ -42,7 +42,7 @@ export default function AdminDashboard() {
             Welcome back, {user?.name ?? "Admin"}
           </h1>
           <p className="mt-2 text-sm text-[#5f4b3f] max-w-xl">
-            Keep an eye on products, inventory health and orders from a calm, paper-inspired workspace.
+            Keep an eye on products and inventory health from a calm, paper-inspired workspace.
           </p>
         </div>
         <button

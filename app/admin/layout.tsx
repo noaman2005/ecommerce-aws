@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Package2, Layers, ClipboardList, UserCircle2, Menu, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package2, Layers, Menu, LogOut } from 'lucide-react';
 import clsx from 'clsx';
 import { ADMIN_EMAIL } from '@/lib/constants';
 import { useAuthStore } from '@/lib/store/auth-store';
@@ -12,8 +12,6 @@ const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Products', href: '/admin/products', icon: Package2 },
   { label: 'Categories', href: '/admin/categories', icon: Layers },
-  { label: 'Orders', href: '/admin/orders', icon: ClipboardList },
-  { label: 'Account', href: '/admin/account', icon: UserCircle2 },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -89,6 +87,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             );
           })}
+          <button
+            type="button"
+            onClick={() => {
+              logout();
+              router.replace('/auth/login');
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-[#b7472f] border border-[#f1e3d5] bg-white hover:bg-[#f7eee5]"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Log out</span>
+          </button>
         </nav>
       </aside>
 
@@ -117,27 +126,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               >
                 <span>View shop</span>
               </Link>
-              <Link
-                href="/admin/how-to"
-                className="inline-flex items-center gap-2 rounded-full border border-[#d9cfc2] bg-white px-3 py-2 text-xs sm:text-sm text-[#5f4b3f] hover:bg-[#f4ebe3]"
-              >
-                <span>How-to</span>
-              </Link>
               <div className="text-right">
                 <p className="text-sm font-semibold text-[#1c1a17]">{user?.name || 'Admin'}</p>
                 <p className="text-xs text-[#5f4b3f]">{user?.email}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  logout();
-                  router.replace('/auth/login');
-                }}
-                className="inline-flex items-center gap-2 rounded-full border border-[#d9cfc2] bg-white px-3 py-2 text-xs sm:text-sm text-[#5f4b3f] hover:bg-[#f4ebe3]"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Log out</span>
-              </button>
             </div>
           </div>
         </header>

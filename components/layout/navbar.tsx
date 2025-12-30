@@ -109,12 +109,6 @@ export const Navbar: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-[#d9cfc2] rounded-xl shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                   <div className="px-4 py-2 text-xs text-[#5f4b3f] border-b border-[#f4ebe3]">{isAdmin ? 'Admin' : 'Customer'}</div>
                   <Link
-                    href="/orders"
-                    className="block px-4 py-2 text-sm text-[#1c1a17] hover:bg-[#f4ebe3] transition-colors"
-                  >
-                    My Orders
-                  </Link>
-                  <Link
                     href="/profile"
                     className="block px-4 py-2 text-sm text-[#1c1a17] hover:bg-[#f4ebe3] transition-colors"
                   >

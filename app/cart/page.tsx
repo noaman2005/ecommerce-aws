@@ -49,7 +49,7 @@ export default function CartPage() {
         <div className="mb-8">
           <p className="text-xs uppercase tracking-[0.4em] text-[#5f4b3f]">In your tray</p>
           <h1 className="text-4xl font-semibold text-[#1c1a17]">Shopping cart</h1>
-          <p className="text-[#5f4b3f]">{items.length} objects waiting for checkout</p>
+          <p className="text-[#5f4b3f]">{items.length} items in your cart</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -148,11 +148,10 @@ export default function CartPage() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white/85 border border-[#f1e3d5] rounded-3xl p-6 sticky top-24 shadow-[0_15px_40px_rgba(28,26,23,0.06)]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-[#b7472f]">Next phase</p>
-              <h2 className="text-2xl font-semibold text-[#1c1a17] mt-2">Checkout coming soon</h2>
+              <p className="text-xs uppercase tracking-[0.4em] text-[#b7472f]">Next steps</p>
+              <h2 className="text-2xl font-semibold text-[#1c1a17] mt-2">Checkout unavailable</h2>
               <p className="text-[#5f4b3f] mt-3">
-                We&rsquo;re polishing the payment flow. For now, save your cart and reach us on WhatsApp or visit the
-                Kurla store to complete your purchase.
+                Online checkout is disabled. Save your cart and reach us on WhatsApp or visit the Kurla store to purchase.
               </p>
 
               <div className="mt-6 space-y-3">

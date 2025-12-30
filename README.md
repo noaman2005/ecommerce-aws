@@ -1,4 +1,4 @@
-# Paper & Ink - Cloud-Native E-Commerce Platform
+# Nisha Stationery - Cloud-Native E-Commerce Platform
 
 A full-stack, serverless e-commerce web application built with **Next.js 14+**, **TypeScript**, and **AWS services**. A curated stationery marketplace featuring a modern, aesthetic UI with smooth micro-animations, role-based access control, and scalable cloud infrastructure.
 
@@ -15,12 +15,13 @@ A full-stack, serverless e-commerce web application built with **Next.js 14+**, 
 - 📦 **Product Details** - Image gallery, descriptions, and add-to-cart
 - 🛒 **Shopping Cart** - Quantity management and price calculation
 - 🔐 **Authentication** - Sign up, login, logout with AWS Cognito
-- 📋 **Order History** - View past purchases and order status (coming soon)
+- 🚫 **Checkout Disabled** - No online checkout or orders; users are directed to contact/WhatsApp/store
 
 ### Host/Admin Features
-- 📊 **Admin Dashboard** - Analytics overview and management hub
+- 📊 **Admin Dashboard** - Inventory-focused overview (no orders)
 - ➕ **Product CRUD** - Add, edit, delete products with S3 image upload
 - 🏷️ **Category Management** - Create and manage product categories
+- 🖼️ **Bulk Image Assist** - Category placeholders and SerpAPI-powered suggestions during bulk upload
 - 🔒 **Secure Access** - Role-based route guards and API protection
 
 ### UI/UX
@@ -37,29 +38,28 @@ A full-stack, serverless e-commerce web application built with **Next.js 14+**, 
 │                        Frontend (Vercel)                     │
 │  Next.js 14 + TypeScript + Tailwind CSS + Framer Motion    │
 └────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
+                    │
+                    ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    AWS API Gateway                           │
 │              (REST API + Cognito Authorizer)                │
 └────────────────────┬────────────────────────────────────────┘
-                     │
-        ┌────────────┼────────────┐
-        ▼            ▼            ▼
-   ┌─────────┐  ┌─────────┐  ┌─────────┐
-   │ Lambda  │  │ Lambda  │  │ Lambda  │
-   │Products │  │ Orders  │  │Categories│
-   └────┬────┘  └────┬────┘  └────┬────┘
-        │            │            │
-        └────────────┼────────────┘
-                     ▼
-        ┌────────────────────────┐
-        │   DynamoDB Tables      │
-        │ • Products             │
-        │ • Orders               │
-        │ • Categories           │
-        │ • Users                │
-        └────────────────────────┘
+                    │
+       ┌────────────┴────────────┐
+       ▼                         ▼
+  ┌─────────┐               ┌─────────┐
+  │ Lambda  │               │ Lambda  │
+  │Products │               │Categories│
+  └────┬────┘               └────┬────┘
+       │                         │
+       └────────────┬────────────┘
+                    ▼
+       ┌────────────────────────┐
+       │   DynamoDB Tables      │
+       │ • Products             │
+       │ • Categories           │
+       │ • Users                │
+       └────────────────────────┘
 
 ┌──────────────┐         ┌──────────────┐
 │  AWS Cognito │         │   AWS S3     │
@@ -82,7 +82,7 @@ A full-stack, serverless e-commerce web application built with **Next.js 14+**, 
 ### Backend (AWS)
 - **Compute**: AWS Lambda (Node.js 18)
 - **API**: AWS API Gateway (REST)
-- **Database**: AWS DynamoDB
+- **Database**: AWS DynamoDB (products, categories, users; orders removed)
 - **Authentication**: AWS Cognito
 - **Storage**: AWS S3
 - **Monitoring**: AWS CloudWatch
@@ -133,8 +133,6 @@ NEXT_PUBLIC_COGNITO_REGION=us-east-1
 # DynamoDB Tables
 DYNAMODB_PRODUCTS_TABLE=ecommerce-products
 DYNAMODB_CATEGORIES_TABLE=ecommerce-categories
-DYNAMODB_ORDERS_TABLE=ecommerce-orders
-DYNAMODB_ORDER_ITEMS_TABLE=ecommerce-order-items
 DYNAMODB_USERS_TABLE=ecommerce-users
 
 # AWS S3
@@ -220,21 +218,19 @@ ecommerce-aws/
 │   ├── api/                      # Next.js API routes (for internal use)
 │   │   ├── products/             # Product API endpoints (not used by frontend)
 │   │   ├── categories/           # Category API endpoints (not used by frontend)
+│   │   ├── image-suggest/        # SerpAPI Bing Images proxy
 │   │   └── upload/               # Image upload endpoint
 │   ├── auth/                     # Authentication pages
 │   │   ├── login/
 │   │   └── signup/
-│   ├── admin/                    # Admin dashboard
-│   │   ├── dashboard/
-│   │   ├── products/
-│   │   ├── categories/
-│   │   └── account/
+│   │   ├── admin/                    # Admin dashboard
+│   │   │   ├── dashboard/
+│   │   │   ├── products/
+│   │   │   └── categories/
 │   ├── products/                 # Product pages
 │   │   ├── page.tsx              # Product listing
 │   │   └── [id]/page.tsx         # Product detail
-│   ├── cart/                     # Shopping cart
-│   ├── checkout/                 # Checkout flow (stub)
-│   ├── orders/                   # Order history (stub)
+│   │   ├── cart/                     # Shopping cart (no checkout)
 │   ├── categories/               # Categories page
 │   ├── layout.tsx                # Root layout
 │   ├── page.tsx                  # Home page

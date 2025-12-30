@@ -56,29 +56,6 @@ export interface Cart {
   total: number;
 }
 
-// Order Types
-export interface Order {
-  id: string;
-  userId: string;
-  items: OrderItem[];
-  total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  shippingAddress: Address;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface OrderItem {
-  id: string;
-  orderId: string;
-  productId: string;
-  productName: string;
-  productImage: string;
-  quantity: number;
-  price: number;
-  hostId: string;
-}
-
 export interface Address {
   fullName: string;
   addressLine1: string;
