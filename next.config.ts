@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "html5-games.io",
       },
+      {
+        protocol: "https",
+        hostname: "www.toys-hobbies.co.uk",
+      },
     ],
     // Allow loading images from the S3 bucket used for product images
     domains: [
