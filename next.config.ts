@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "ui-avatars.com",
       },
+      {
+        protocol: "https",
+        hostname: "imgv2-1-f.scribdassets.com",
+      },
+      {
+        protocol: "https",
+        hostname: "html5-games.io",
+      },
     ],
     // Allow loading images from the S3 bucket used for product images
     domains: [

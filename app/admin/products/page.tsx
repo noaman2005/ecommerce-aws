@@ -275,6 +275,10 @@ export default function AdminProductsPage() {
   };
 
   const clearSelection = () => setSelectedProductIds(new Set());
+  const selectAllActive = () => {
+    const ids = activeProducts.map((p) => p.id).filter(Boolean);
+    setSelectedProductIds(new Set(ids));
+  };
 
   const handleBulkDeleteSelected = async () => {
     if (selectedProductIds.size === 0) return;
@@ -319,6 +323,24 @@ export default function AdminProductsPage() {
 
   const setAllBulkCategories = (categoryId: string) => {
     setBulkRows((rows) => rows.map((row) => ({ ...row, categoryId })));
+  };
+
+  const suggestImageUrl = async (name: string, categoryName?: string) => {
+    try {
+      const query = [name, categoryName].filter(Boolean).join(" ");
+      const res = await fetch("/api/image-suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, count: 1 }),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      const url = Array.isArray(json?.data) ? json.data[0] : null;
+      return typeof url === "string" ? url : null;
+    } catch (error) {
+      console.error("Image suggest failed", error);
+      return null;
+    }
   };
 
   const getCategoryPlaceholder = (categoryId?: string) => {
@@ -431,14 +453,26 @@ export default function AdminProductsPage() {
     setBulkError(null);
 
     try {
+      let suggestBudget = 25; // cap external calls per run
       for (const row of bulkRows) {
         const categoryFallback = getCategoryPlaceholder(row.categoryId);
+        let finalImage = row.imageUrl;
+
+        if (!finalImage && suggestBudget > 0) {
+          const categoryName = categories.find((c) => c.id === row.categoryId)?.name;
+          const suggested = await suggestImageUrl(row.name, categoryName);
+          if (suggested) {
+            finalImage = suggested;
+            suggestBudget -= 1;
+          }
+        }
+
         const payload = {
           name: row.name,
           description: row.description,
           price: row.price,
           stock: row.stock,
-          images: row.imageUrl ? [row.imageUrl] : [categoryFallback],
+          images: finalImage ? [finalImage] : [categoryFallback],
           categoryId: row.categoryId,
           featured: row.featured ?? false,
           createdByEmail: ADMIN_EMAIL,
@@ -540,7 +574,7 @@ export default function AdminProductsPage() {
               </div>
             )}
 
-            <div className="inline-flex items-center gap-1 rounded-full border border-[#e2d5c5] bg-[#fff8f1] px-2 py-1 text-[11px] text-[#5f4b3f]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#e2d5c5] bg-[#fff8f1] px-2 py-1 text-[11px] text-[#5f4b3f]">
               <span className="uppercase tracking-[0.25em] mr-1">View</span>
               <button
                 type="button"
@@ -563,6 +597,13 @@ export default function AdminProductsPage() {
                 }`}
               >
                 Grid
+              </button>
+              <button
+                type="button"
+                onClick={selectAllActive}
+                className="ml-2 px-3 py-1 rounded-full border border-[#d9cfc2] bg-white text-[11px] font-semibold text-[#b7472f] hover:bg-[#f7eee5]"
+              >
+                Select all
               </button>
             </div>
           </div>

@@ -7,21 +7,6 @@ import { APP_NAME, APP_TAGLINE } from '@/lib/constants';
 import { formatCurrency } from '@/lib/utils/currency';
 import FeaturedCarousel from '@/components/home/featured-carousel';
 
-const COLLECTIONS = [
-  {
-    title: 'Signature Notebooks',
-    copy: 'Fine grain covers, soft tactile paper, and artisan stitching for journaling rituals.',
-  },
-  {
-    title: 'Ink & Pens',
-    copy: 'Balanced fountain pens, archival inks, and restorative brush sets.',
-  },
-  {
-    title: 'Desk Accessories',
-    copy: 'Drawer organizers, wax seals, and travel pouches curated for creative routines.',
-  },
-];
-
 export default async function Home() {
   const products = await getProducts();
   const featuredCandidates = (products || []).filter((product) => product.featured);
